@@ -4,7 +4,6 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  // Reemplazá 'pomodoro' por el nombre exacto de tu repositorio en GitHub
   basePath: "/pomodoro",
 };
 
