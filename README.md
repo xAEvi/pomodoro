@@ -1,36 +1,32 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Flexible Pomodoro
 
-## Getting Started
+This project is a Pomodoro timer created with Next.js and React, built specifically for my daily workflow. I had never seen a pomodoro that naturally incorporated a "flex" feature, so I vibe-coded it to use in my day-to-day.
 
-First, run the development server:
+## What it does
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+The application offers two modes:
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **Classic Mode**: automatically alternates between focus and rest once each interval ends.
+- **Flexible Mode**: displays the focus and rest timers side-by-side, letting the user control when to switch phases.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+In Flexible Mode, the total time is calculated by multiplying the focus and rest minutes by the configured number of sessions. This allows you to work in longer blocks and adapt them to a less rigid routine.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Key Features
 
-## Learn More
+- Configuration for focus minutes, rest minutes, and number of sessions.
+- Click sounds on buttons and an alert sound when a phase ends.
+- Modern dark-themed interface with smooth transitions.
+- Confirmation prompt before changing modes if the timer is already running.
+- Mode-specific behavior:
+  - In **classic**, the timer automatically alternates phases.
+  - In **flex**, the user decides when to switch phases using the "Toggle Phase" button.
 
-To learn more about Next.js, take a look at the following resources:
+## How to use
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Adjust the values for `Focus`, `Break`, and `Sessions` before starting.
+2. Press `Start` to begin.
+3. In classic mode, the timer will alternate between focus and rest automatically.
+4. In flexible mode, use `Toggle Phase` to switch from focus to rest and vice versa.
+5. Press `Reset` to return to the initial state.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+While the timer is active, configuration controls are disabled to prevent inconsistent changes.
