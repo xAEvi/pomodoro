@@ -112,6 +112,8 @@ export default function PomodoroContainer() {
           phase={currentPhase}
           timeLeftFocus={timeLeftFocus}
           timeLeftBreak={timeLeftBreak}
+          totalFocus={initialFocusSeconds}
+          totalBreak={initialBreakSeconds}
           formatTime={formatTime}
         />
 
