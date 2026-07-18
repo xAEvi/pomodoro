@@ -32,15 +32,18 @@ export default function TimerDisplay({
     progress: number;
     colorClass: string;
   }) => (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl">
+    <div className="absolute inset-0 pointer-events-none rounded-3xl overflow-hidden">
       <div
-        className={`absolute inset-0 transition-all duration-300 ${colorClass}`}
+        className={`absolute inset-0 border-[3px] border-transparent ${colorClass}`}
         style={{
-          padding: "2px",
-          background: `conic-gradient(currentColor ${progress}%, transparent ${progress}%)`,
-          WebkitMask:
-            "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
-          WebkitMaskComposite: "xor",
+          borderRadius: "24px",
+          background: `
+            conic-gradient(currentColor ${progress}%, transparent ${progress}%) border-box
+          `,
+          mask: `
+            linear-gradient(#fff 0 0) padding-box,
+            linear-gradient(#fff 0 0) border-box
+          `,
           maskComposite: "exclude",
         }}
       />
