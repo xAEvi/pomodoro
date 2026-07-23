@@ -29,7 +29,7 @@ export default function SettingsForm({
     >
       <div className="flex flex-col gap-1.5">
         <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">
-          Foco (min)
+          Focus (min)
         </label>
         <input
           type="number"
@@ -46,7 +46,7 @@ export default function SettingsForm({
 
       <div className="flex flex-col gap-1.5">
         <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">
-          Pausa (min)
+          Break (min)
         </label>
         <input
           type="number"
@@ -63,7 +63,7 @@ export default function SettingsForm({
 
       <div className="flex flex-col gap-1.5">
         <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">
-          Sesiones
+          Sessions
         </label>
         <input
           type="number"

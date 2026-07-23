@@ -23,7 +23,7 @@ export default function ModeSelector({
     // Si el temporizador ya fue iniciado/alterado, advertimos al usuario antes de cambiar
     if (isDirty) {
       const confirmChange = window.confirm(
-        "¿Estás seguro de que quieres cambiar de modo? El progreso actual del temporizador se reiniciará.",
+        "Are you sure you want to change modes? The timer's current progress will be reset.",
       );
       if (!confirmChange) return;
     }
@@ -43,7 +43,7 @@ export default function ModeSelector({
             : "text-zinc-400 hover:text-zinc-200 disabled:opacity-50"
         }`}
       >
-        Modo Clásico
+        Classic Mode
       </button>
       <button
         onClick={() => handleModeChange("flex")}
@@ -54,7 +54,7 @@ export default function ModeSelector({
             : "text-zinc-400 hover:text-zinc-200 disabled:opacity-50"
         }`}
       >
-        Modo Flexible
+        Flex Mode
       </button>
     </div>
   );

@@ -67,7 +67,7 @@ export default function TimerDisplay({
               : "bg-blue-500/10 text-blue-400"
           }`}
         >
-          {isFocus ? "Foco activo" : "Tiempo de descanso"}
+          {isFocus ? "Focus active" : "Break time"}
         </span>
         <span className="text-7xl font-bold font-mono tracking-tighter text-white tabular-nums">
           {formatTime(isFocus ? timeLeftFocus : timeLeftBreak)}
@@ -94,7 +94,7 @@ export default function TimerDisplay({
         <span
           className={`text-xs font-medium mb-1 ${isFocus ? "text-red-400" : "text-zinc-500"}`}
         >
-          Enfoque
+          Focus
         </span>
         <span
           className={`text-3xl font-bold font-mono tracking-tight tabular-nums ${isFocus ? "text-white" : "text-zinc-400"}`}
@@ -117,7 +117,7 @@ export default function TimerDisplay({
         <span
           className={`text-xs font-medium mb-1 ${!isFocus ? "text-blue-400" : "text-zinc-500"}`}
         >
-          Descanso
+          Break
         </span>
         <span
           className={`text-3xl font-bold font-mono tracking-tight tabular-nums ${!isFocus ? "text-white" : "text-zinc-400"}`}

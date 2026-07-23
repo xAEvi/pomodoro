@@ -94,7 +94,7 @@ export default function PomodoroContainer() {
           <span
             className={`text-xs font-mono transition-colors duration-500 ${textMutedClass}`}
           >
-            Sesión {currentSession} de {sessions}
+            Session {currentSession} of {sessions}
           </span>
         </div>
 

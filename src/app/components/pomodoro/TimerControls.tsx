@@ -34,7 +34,7 @@ export default function TimerControls({
             : "bg-white text-black hover:bg-zinc-100"
         }`}
       >
-        {isRunning ? "Pausar" : "Iniciar"}
+        {isRunning ? "Pause" : "Start"}
       </button>
 
       {activeMode === "flex" && (
@@ -42,16 +42,16 @@ export default function TimerControls({
           onClick={() => handleAction(onTogglePhase)}
           className="flex-1 py-4 text-sm font-bold rounded-2xl bg-zinc-900 border border-zinc-800 text-zinc-200 hover:bg-zinc-800/60 transition-all duration-200 active:scale-[0.98]"
         >
-          Alternar Fase
+          Toggle Phase
         </button>
       )}
 
       <button
         onClick={() => handleAction(onReset)}
         className="px-5 py-4 text-sm font-bold rounded-2xl bg-zinc-950 border border-zinc-900 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900/30 transition-all duration-200"
-        title="Reiniciar temporizador"
+        title="Reset timer"
       >
-        Reiniciar
+        Reset
       </button>
     </div>
   );
