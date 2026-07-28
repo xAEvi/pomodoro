@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { loadState, saveState } from "../utils/storage";
 
 export type PomodoroMode = "classic" | "flex";
 export type PomodoroPhase = "focus" | "break";
@@ -8,31 +9,64 @@ interface UsePomodoroProps {
   onTick?: () => void;
 }
 
+// Se calcula una sola vez al cargar el módulo, antes de que se inicialicen los estados.
+const persisted = loadState();
+
+// Si había una sesión corriendo y su tiempo ya expiró mientras la pestaña estaba cerrada,
+// no queremos reanudarla como si siguiera activa.
+const restoredEndTime =
+  persisted?.isRunning && persisted.endTime && persisted.endTime > Date.now()
+    ? persisted.endTime
+    : null;
+const restoredWasRunning = persisted?.isRunning && restoredEndTime !== null;
+
+function restoredTimeLeft(phase: PomodoroPhase, fallback: number): number {
+  if (
+    !restoredWasRunning ||
+    !restoredEndTime ||
+    persisted?.currentPhase !== phase
+  ) {
+    return fallback;
+  }
+  return Math.max(0, Math.ceil((restoredEndTime - Date.now()) / 1000));
+}
+
 export function usePomodoro({
   onPhaseComplete,
   onTick,
 }: UsePomodoroProps = {}) {
   // Configuración de tiempos (en minutos)
-  const [focusTime, setFocusTime] = useState(25);
-  const [breakTime, setBreakTime] = useState(5);
-  const [sessions, setSessions] = useState(4);
-
-  // Estados del temporizador (en segundos)
-  const [timeLeftFocus, setTimeLeftFocus] = useState(25 * 60);
-  const [timeLeftBreak, setTimeLeftBreak] = useState(5 * 60);
+  const [focusTime, setFocusTime] = useState(persisted?.focusTime ?? 25);
+  const [breakTime, setBreakTime] = useState(persisted?.breakTime ?? 5);
+  const [sessions, setSessions] = useState(persisted?.sessions ?? 4);
 
   // Control de ejecución
-  const [activeMode, setActiveMode] = useState<PomodoroMode>("classic");
-  const [currentPhase, setCurrentPhase] = useState<PomodoroPhase>("focus");
-  const [isRunning, setIsRunning] = useState(false);
-  const [currentSession, setCurrentSession] = useState(1);
+  const [activeMode, setActiveMode] = useState<PomodoroMode>(
+    persisted?.activeMode ?? "classic",
+  );
+  const [currentPhase, setCurrentPhase] = useState<PomodoroPhase>(
+    persisted?.currentPhase ?? "focus",
+  );
+  const [isRunning, setIsRunning] = useState(restoredWasRunning ?? false);
+  const [currentSession, setCurrentSession] = useState(
+    persisted?.currentSession ?? 1,
+  );
+
+  // Estados del temporizador (en segundos)
+  const multiplierInit = activeMode === "flex" ? sessions : 1;
+  const [timeLeftFocus, setTimeLeftFocus] = useState(
+    restoredTimeLeft("focus", focusTime * 60 * multiplierInit),
+  );
+  const [timeLeftBreak, setTimeLeftBreak] = useState(
+    restoredTimeLeft("break", breakTime * 60 * multiplierInit),
+  );
 
   // Referencias para el loop de alta precisión
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const endTimeRef = useRef<number | null>(null);
+  const endTimeRef = useRef<number | null>(restoredEndTime);
 
   // Referencia para saber si el cronómetro ha sido alterado o iniciado
-  const isDirtyRef = useRef(false);
+  const isDirtyRef = useRef(restoredWasRunning || (persisted?.currentSession ?? 1) > 1);
 
   /**
    * Sincronizar cambios de configuración de inputs.
@@ -175,6 +209,28 @@ export function usePomodoro({
     },
     [focusTime, breakTime, sessions],
   );
+
+  // Persistimos configuración y sesión en curso para sobrevivir a un refresh.
+  useEffect(() => {
+    saveState({
+      focusTime,
+      breakTime,
+      sessions,
+      activeMode,
+      currentPhase,
+      currentSession,
+      isRunning,
+      endTime: isRunning ? endTimeRef.current : null,
+    });
+  }, [
+    focusTime,
+    breakTime,
+    sessions,
+    activeMode,
+    currentPhase,
+    currentSession,
+    isRunning,
+  ]);
 
   return {
     focusTime,
