@@ -167,6 +167,26 @@ export default function PomodoroContainer() {
           </span>
         </div>
 
+        {/* Progreso de sesiones */}
+        <div className="flex items-center justify-center gap-1.5">
+          {Array.from({ length: sessions }, (_, index) => {
+            const isCompleted = index < currentSession - 1;
+            const isCurrent = index === currentSession - 1;
+            let dotClass = "bg-zinc-700";
+            if (isCompleted) {
+              dotClass = "bg-white";
+            } else if (isCurrent) {
+              dotClass = currentPhase === "focus" ? "bg-red-400" : "bg-sky-400";
+            }
+            return (
+              <span
+                key={index}
+                className={`h-1.5 w-1.5 rounded-full transition-colors duration-300 ${dotClass}`}
+              />
+            );
+          })}
+        </div>
+
         {/* Selector de Modo */}
         <ModeSelector
           activeMode={activeMode}
