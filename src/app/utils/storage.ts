@@ -11,6 +11,7 @@ export interface PersistedPomodoroState {
   currentSession: number;
   isRunning: boolean;
   endTime: number | null;
+  autoStart: boolean;
 }
 
 export function loadState(): Partial<PersistedPomodoroState> | null {

@@ -36,6 +36,8 @@ export default function PomodoroContainer() {
     activeMode,
     currentSession,
     isRunning,
+    autoStart,
+    setAutoStart,
     startTimer,
     pauseTimer,
     resetTimer,
@@ -192,6 +194,9 @@ export default function PomodoroContainer() {
           setBreakTime={setBreakTime}
           setSessions={setSessions}
           disabled={isRunning}
+          activeMode={activeMode}
+          autoStart={autoStart}
+          setAutoStart={setAutoStart}
         />
       </div>
     </div>

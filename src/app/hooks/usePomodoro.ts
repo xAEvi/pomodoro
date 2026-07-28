@@ -51,6 +51,7 @@ export function usePomodoro({
   const [currentSession, setCurrentSession] = useState(
     persisted?.currentSession ?? 1,
   );
+  const [autoStart, setAutoStart] = useState(persisted?.autoStart ?? false);
 
   // Estados del temporizador (en segundos)
   const multiplierInit = activeMode === "flex" ? sessions : 1;
@@ -104,10 +105,15 @@ export function usePomodoro({
         }
         // Al alternar automáticamente, la nueva fase arranca desde su valor por defecto limpio
         isDirtyRef.current = false;
+
+        // Si el auto-start está activo, continuamos sin esperar a que el usuario pulse Start
+        if (autoStart) {
+          setIsRunning(true);
+        }
       }
       // En modo Flex no se hace nada automático al terminar; el usuario controla el flujo.
     },
-    [activeMode, sessions, onPhaseComplete],
+    [activeMode, sessions, autoStart, onPhaseComplete],
   );
 
   // Loop principal del temporizador de alta precisión
@@ -221,6 +227,7 @@ export function usePomodoro({
       currentSession,
       isRunning,
       endTime: isRunning ? endTimeRef.current : null,
+      autoStart,
     });
   }, [
     focusTime,
@@ -230,6 +237,7 @@ export function usePomodoro({
     currentPhase,
     currentSession,
     isRunning,
+    autoStart,
   ]);
 
   return {
@@ -245,6 +253,8 @@ export function usePomodoro({
     activeMode,
     currentSession,
     isRunning,
+    autoStart,
+    setAutoStart,
     startTimer,
     pauseTimer,
     resetTimer,
