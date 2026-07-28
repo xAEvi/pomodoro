@@ -77,6 +77,30 @@ export default function PomodoroContainer() {
     document.title = `${formatTime(timeLeft)} - ${phaseLabel}`;
   }, [isRunning, currentPhase, timeLeftFocus, timeLeftBreak]);
 
+  // Atajos de teclado: Space (play/pause), R (reset), T (alternar fase en modo Flex).
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target && ["INPUT", "TEXTAREA"].includes(target.tagName)) return;
+
+      if (event.key === " ") {
+        event.preventDefault();
+        if (isRunning) {
+          pauseTimer();
+        } else {
+          startTimer();
+        }
+      } else if (event.key === "r" || event.key === "R") {
+        resetTimer();
+      } else if (event.key === "t" || event.key === "T") {
+        togglePhase();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isRunning, startTimer, pauseTimer, resetTimer, togglePhase]);
+
   // Lógica de colores dinámicos para TODA la pantalla (Corregida)
   let bgClass = "bg-zinc-950";
   let textMutedClass = "text-zinc-500";
