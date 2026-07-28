@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { usePomodoro } from "../../hooks/usePomodoro";
 import { formatTime } from "../../utils/time";
 import { playAlertSound } from "../../utils/audio";
@@ -43,6 +43,17 @@ export default function PomodoroContainer() {
     timeLeftFocus < initialFocusSeconds ||
     timeLeftBreak < initialBreakSeconds ||
     currentSession > 1;
+
+  // Título dinámico de la pestaña para ver el timer sin tenerla activa.
+  useEffect(() => {
+    if (!isRunning) {
+      document.title = "Pomodoro";
+      return;
+    }
+    const timeLeft = currentPhase === "focus" ? timeLeftFocus : timeLeftBreak;
+    const phaseLabel = currentPhase === "focus" ? "Focus" : "Break";
+    document.title = `${formatTime(timeLeft)} - ${phaseLabel}`;
+  }, [isRunning, currentPhase, timeLeftFocus, timeLeftBreak]);
 
   // Lógica de colores dinámicos para TODA la pantalla (Corregida)
   let bgClass = "bg-zinc-950";
