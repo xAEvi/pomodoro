@@ -4,6 +4,18 @@ import React from "react";
 
 import { PomodoroMode } from "../../hooks/usePomodoro";
 
+interface Preset {
+  label: string;
+  focusTime: number;
+  breakTime: number;
+}
+
+const PRESETS: Preset[] = [
+  { label: "25/5", focusTime: 25, breakTime: 5 },
+  { label: "50/10", focusTime: 50, breakTime: 10 },
+  { label: "90/20", focusTime: 90, breakTime: 20 },
+];
+
 interface SettingsFormProps {
   focusTime: number;
   breakTime: number;
@@ -35,6 +47,23 @@ export default function SettingsForm({
         disabled ? "opacity-50 pointer-events-none" : "opacity-100"
       }`}
     >
+      <div className="flex gap-2">
+        {PRESETS.map((preset) => (
+          <button
+            key={preset.label}
+            type="button"
+            disabled={disabled}
+            onClick={() => {
+              setFocusTime(preset.focusTime);
+              setBreakTime(preset.breakTime);
+            }}
+            className="flex-1 py-1.5 text-xs font-semibold rounded-lg bg-zinc-900 border border-zinc-850 text-zinc-400 hover:text-zinc-100 hover:border-zinc-700 transition-colors duration-150 disabled:opacity-60"
+          >
+            {preset.label}
+          </button>
+        ))}
+      </div>
+
       <div className="grid grid-cols-3 gap-3">
         <div className="flex flex-col gap-1.5">
           <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">
