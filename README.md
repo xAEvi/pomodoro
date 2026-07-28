@@ -21,6 +21,24 @@ In Flexible Mode, the total time is calculated by multiplying the focus and rest
   - In **classic**, the timer automatically alternates phases.
   - In **flex**, the user decides when to switch phases using the "Toggle Phase" button.
 
+## Running locally
+
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+2. Start the development server:
+   ```bash
+   npm run dev
+   ```
+3. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+Other available scripts:
+
+- `npm run build` — create a production build.
+- `npm run start` — run the production build (after `npm run build`).
+- `npm run lint` — run ESLint.
+
 ## How to use
 
 1. Adjust the values for `Focus`, `Break`, and `Sessions` before starting.
