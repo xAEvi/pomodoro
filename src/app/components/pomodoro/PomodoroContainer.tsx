@@ -1,13 +1,26 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { usePomodoro } from "../../hooks/usePomodoro";
+import { usePomodoro, PomodoroPhase } from "../../hooks/usePomodoro";
 import { formatTime } from "../../utils/time";
 import { playAlertSound } from "../../utils/audio";
 import ModeSelector from "./ModeSelector";
 import TimerDisplay from "./TimerDisplay";
 import TimerControls from "./TimerControls";
 import SettingsForm from "./SettingsForm";
+
+function notifyPhaseComplete(completedPhase: PomodoroPhase) {
+  if (typeof window === "undefined" || !("Notification" in window)) return;
+  if (Notification.permission !== "granted") return;
+
+  const title =
+    completedPhase === "focus" ? "Focus session complete" : "Break complete";
+  const body =
+    completedPhase === "focus"
+      ? "Time for a break."
+      : "Time to get back to focus.";
+  new Notification(title, { body });
+}
 
 export default function PomodoroContainer() {
   const {
@@ -31,8 +44,17 @@ export default function PomodoroContainer() {
   } = usePomodoro({
     onPhaseComplete: (completedPhase) => {
       playAlertSound();
+      notifyPhaseComplete(completedPhase);
     },
   });
+
+  // Solicitamos permiso de notificaciones una sola vez al montar.
+  useEffect(() => {
+    if (typeof window === "undefined" || !("Notification" in window)) return;
+    if (Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+  }, []);
 
   // Cálculo de estado "dirty" para la confirmación de cambio de modo
   const multiplier = activeMode === "flex" ? sessions : 1;
