@@ -4,6 +4,7 @@ import React, { useEffect } from "react";
 import { usePomodoro, PomodoroPhase } from "../../hooks/usePomodoro";
 import { formatTime } from "../../utils/time";
 import { playAlertSound } from "../../utils/audio";
+import { setFaviconColor } from "../../utils/favicon";
 import ModeSelector from "./ModeSelector";
 import TimerDisplay from "./TimerDisplay";
 import TimerControls from "./TimerControls";
@@ -78,6 +79,15 @@ export default function PomodoroContainer() {
     const phaseLabel = currentPhase === "focus" ? "Focus" : "Break";
     document.title = `${formatTime(timeLeft)} - ${phaseLabel}`;
   }, [isRunning, currentPhase, timeLeftFocus, timeLeftBreak]);
+
+  // Favicon dinámico: rojo en foco, celeste en descanso, gris cuando está pausado.
+  useEffect(() => {
+    if (!isRunning) {
+      setFaviconColor("#71717a"); // zinc-500
+      return;
+    }
+    setFaviconColor(currentPhase === "focus" ? "#ef4444" : "#38bdf8"); // red-500 / sky-500
+  }, [isRunning, currentPhase]);
 
   // Atajos de teclado: Space (play/pause), R (reset), T (alternar fase en modo Flex).
   useEffect(() => {
