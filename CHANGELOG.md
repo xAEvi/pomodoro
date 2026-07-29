@@ -13,6 +13,10 @@
 - **Manejo de errores en notificaciones y audio**: `Notification.requestPermission()` y la reproducción de sonidos (clicks, alerta, sonido ambiental) ahora están envueltos en try/catch, así un bloqueo del navegador (permiso denegado, políticas de autoplay, límite de `AudioContext`) no rompe el resto de la app.
 - **Mismatch de hidratación en el botón de Picture-in-Picture**: la detección de soporte de la API se movió a `useSyncExternalStore` para que el primer render del cliente coincida con el del servidor.
 
+### Docs
+
+- `README.md`: se actualizó "Key Features" y "How to use" para reflejar todas las funcionalidades agregadas hasta la fecha (persistencia, notificaciones, atajos de teclado, presets, favicon dinámico, progreso de sesiones, Picture-in-Picture y sonido ambiental).
+
 ## 2026-07-28
 
 ### Added
