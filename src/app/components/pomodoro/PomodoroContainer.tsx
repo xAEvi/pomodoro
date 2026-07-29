@@ -5,12 +5,17 @@ import { createPortal } from "react-dom";
 import { usePomodoro, PomodoroPhase } from "../../hooks/usePomodoro";
 import { usePictureInPicture } from "../../hooks/usePictureInPicture";
 import { formatTime } from "../../utils/time";
-import { playAlertSound } from "../../utils/audio";
+import {
+  playAlertSound,
+  startAmbientSound,
+  stopAmbientSound,
+} from "../../utils/audio";
 import { setFaviconColor } from "../../utils/favicon";
 import ModeSelector from "./ModeSelector";
 import TimerDisplay from "./TimerDisplay";
 import TimerControls from "./TimerControls";
 import SettingsForm from "./SettingsForm";
+import AmbientSoundToggle from "./AmbientSoundToggle";
 import PipTimer from "./PipTimer";
 
 function notifyPhaseComplete(completedPhase: PomodoroPhase) {
@@ -42,6 +47,10 @@ export default function PomodoroContainer() {
     isRunning,
     autoStart,
     setAutoStart,
+    ambientSoundEnabled,
+    setAmbientSoundEnabled,
+    ambientSoundType,
+    setAmbientSoundType,
     startTimer,
     pauseTimer,
     resetTimer,
@@ -64,9 +73,32 @@ export default function PomodoroContainer() {
   // Solicitamos permiso de notificaciones una sola vez al montar.
   useEffect(() => {
     if (typeof window === "undefined" || !("Notification" in window)) return;
-    if (Notification.permission === "default") {
-      Notification.requestPermission();
+    if (Notification.permission !== "default") return;
+
+    try {
+      // Safari viejo soporta solo la API basada en callback (sin Promise);
+      // pasar un callback vacío la deja funcionar en ambos casos.
+      const result = Notification.requestPermission(() => {});
+      result?.catch?.(() => {
+        // Denegado o interrumpido por el usuario; las notificaciones simplemente no se mostrarán.
+      });
+    } catch {
+      // Notification.requestPermission no disponible o bloqueado; se ignora en silencio.
     }
+  }, []);
+
+  // Sonido ambiental: solo suena mientras el timer corre en fase de foco.
+  useEffect(() => {
+    if (ambientSoundEnabled && isRunning && currentPhase === "focus") {
+      startAmbientSound(ambientSoundType);
+    } else {
+      stopAmbientSound();
+    }
+  }, [ambientSoundEnabled, ambientSoundType, isRunning, currentPhase]);
+
+  // Nos aseguramos de detener el sonido ambiental si el componente se desmonta.
+  useEffect(() => {
+    return () => stopAmbientSound();
   }, []);
 
   // Cálculo de estado "dirty" para la confirmación de cambio de modo
@@ -266,6 +298,15 @@ export default function PomodoroContainer() {
           activeMode={activeMode}
           autoStart={autoStart}
           setAutoStart={setAutoStart}
+        />
+
+        {/* Sonido ambiental: se deja fuera del formulario disabled para poder
+            activarlo/desactivarlo también mientras el timer está corriendo. */}
+        <AmbientSoundToggle
+          enabled={ambientSoundEnabled}
+          type={ambientSoundType}
+          onToggle={setAmbientSoundEnabled}
+          onTypeChange={setAmbientSoundType}
         />
       </div>
 

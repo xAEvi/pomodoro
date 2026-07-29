@@ -1,4 +1,5 @@
 import type { PomodoroMode, PomodoroPhase } from "../hooks/usePomodoro";
+import type { AmbientSoundType } from "./audio";
 
 const STORAGE_KEY = "pomodoro-state";
 
@@ -12,6 +13,8 @@ export interface PersistedPomodoroState {
   isRunning: boolean;
   endTime: number | null;
   autoStart: boolean;
+  ambientSoundEnabled: boolean;
+  ambientSoundType: AmbientSoundType;
 }
 
 export function loadState(): Partial<PersistedPomodoroState> | null {

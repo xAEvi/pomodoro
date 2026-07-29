@@ -5,6 +5,13 @@
 ### Added
 
 - **Modo "siempre visible" (Picture-in-Picture)**: botón junto al título que abre el timer en una ventana flotante (Document Picture-in-Picture API) para verlo por encima de otras aplicaciones. La ventana incluye fase, tiempo restante, botón Start/Pause y, en modo Flex, Toggle Phase.
+- **Sonidos ambientales opcionales durante el foco**: toggle "Ambient sound during focus" con dos opciones (lluvia / ruido blanco) generadas con la Web Audio API, que solo suenan mientras el timer corre en fase de foco.
+
+### Fixed
+
+- **Precisión en pestañas en background**: al volver a foco la pestaña se recalcula de inmediato el tiempo restante contra `endTimeRef` en vez de esperar al próximo tick del `setInterval`, que el navegador puede haber demorado por políticas de throttling.
+- **Manejo de errores en notificaciones y audio**: `Notification.requestPermission()` y la reproducción de sonidos (clicks, alerta, sonido ambiental) ahora están envueltos en try/catch, así un bloqueo del navegador (permiso denegado, políticas de autoplay, límite de `AudioContext`) no rompe el resto de la app.
+- **Mismatch de hidratación en el botón de Picture-in-Picture**: la detección de soporte de la API se movió a `useSyncExternalStore` para que el primer render del cliente coincida con el del servidor.
 
 ## 2026-07-28
 

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { loadState, saveState } from "../utils/storage";
+import type { AmbientSoundType } from "../utils/audio";
 
 export type PomodoroMode = "classic" | "flex";
 export type PomodoroPhase = "focus" | "break";
@@ -52,6 +53,12 @@ export function usePomodoro({
     persisted?.currentSession ?? 1,
   );
   const [autoStart, setAutoStart] = useState(persisted?.autoStart ?? false);
+  const [ambientSoundEnabled, setAmbientSoundEnabled] = useState(
+    persisted?.ambientSoundEnabled ?? false,
+  );
+  const [ambientSoundType, setAmbientSoundType] = useState<AmbientSoundType>(
+    persisted?.ambientSoundType ?? "rain",
+  );
 
   // Estados del temporizador (en segundos)
   const multiplierInit = activeMode === "flex" ? sessions : 1;
@@ -116,37 +123,43 @@ export function usePomodoro({
     [activeMode, sessions, autoStart, onPhaseComplete],
   );
 
+  // Recalcula los segundos restantes contra el punto de finalización absoluto
+  // (endTimeRef). La usan tanto el tick del setInterval como el listener de
+  // visibilitychange, de forma que al volver de una pestaña en background el
+  // tiempo se corrige al instante en vez de esperar al próximo tick, que el
+  // navegador puede haber demorado por sus políticas de throttling.
+  const syncTimeLeft = useCallback(() => {
+    if (!endTimeRef.current) return;
+
+    const msRemaining = endTimeRef.current - Date.now();
+    const secondsRemaining = Math.max(0, Math.ceil(msRemaining / 1000));
+
+    if (currentPhase === "focus") {
+      setTimeLeftFocus(secondsRemaining);
+      if (secondsRemaining <= 0) {
+        handlePhaseCompletion("focus");
+      }
+    } else {
+      setTimeLeftBreak(secondsRemaining);
+      if (secondsRemaining <= 0) {
+        handlePhaseCompletion("break");
+      }
+    }
+  }, [currentPhase, handlePhaseCompletion]);
+
   // Loop principal del temporizador de alta precisión
   useEffect(() => {
     if (isRunning) {
       isDirtyRef.current = true; // El temporizador ya está en uso, bloqueamos reescrituras de inputs
 
-      // 1. Definir el punto de finalización absoluto en el futuro (en ms)
+      // Definir el punto de finalización absoluto en el futuro (en ms)
       const secondsToCount =
         currentPhase === "focus" ? timeLeftFocus : timeLeftBreak;
       endTimeRef.current = Date.now() + secondsToCount * 1000;
 
       intervalRef.current = setInterval(() => {
-        if (!endTimeRef.current) return;
-
-        // 2. Calcular los segundos restantes reales
-        const msRemaining = endTimeRef.current - Date.now();
-        const secondsRemaining = Math.max(0, Math.ceil(msRemaining / 1000));
-
         onTick?.();
-
-        // 3. Actualizar la fase correspondiente
-        if (currentPhase === "focus") {
-          setTimeLeftFocus(secondsRemaining);
-          if (secondsRemaining <= 0) {
-            handlePhaseCompletion("focus");
-          }
-        } else {
-          setTimeLeftBreak(secondsRemaining);
-          if (secondsRemaining <= 0) {
-            handlePhaseCompletion("break");
-          }
-        }
+        syncTimeLeft();
       }, 200);
     } else {
       if (intervalRef.current) {
@@ -157,14 +170,24 @@ export function usePomodoro({
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [
-    isRunning,
-    currentPhase,
-    timeLeftFocus,
-    timeLeftBreak,
-    handlePhaseCompletion,
-    onTick,
-  ]);
+  }, [isRunning, currentPhase, timeLeftFocus, timeLeftBreak, syncTimeLeft, onTick]);
+
+  // Al volver a foco la pestaña, recalculamos de inmediato en vez de esperar al
+  // próximo tick del interval, que pudo haber sido pausado/limitado mientras
+  // la pestaña estaba en background.
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible" && isRunning) {
+        syncTimeLeft();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () =>
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [isRunning, syncTimeLeft]);
 
   // Controladores de acciones (Actions)
 
@@ -228,6 +251,8 @@ export function usePomodoro({
       isRunning,
       endTime: isRunning ? endTimeRef.current : null,
       autoStart,
+      ambientSoundEnabled,
+      ambientSoundType,
     });
   }, [
     focusTime,
@@ -238,6 +263,8 @@ export function usePomodoro({
     currentSession,
     isRunning,
     autoStart,
+    ambientSoundEnabled,
+    ambientSoundType,
   ]);
 
   return {
@@ -255,6 +282,10 @@ export function usePomodoro({
     isRunning,
     autoStart,
     setAutoStart,
+    ambientSoundEnabled,
+    setAmbientSoundEnabled,
+    ambientSoundType,
+    setAmbientSoundType,
     startTimer,
     pauseTimer,
     resetTimer,

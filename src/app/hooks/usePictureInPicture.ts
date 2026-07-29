@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 
 declare global {
   interface Window {
@@ -14,10 +14,29 @@ declare global {
   }
 }
 
+function getIsSupportedSnapshot() {
+  return "documentPictureInPicture" in window;
+}
+
+function getIsSupportedServerSnapshot() {
+  return false;
+}
+
+function subscribeNoop() {
+  return () => {};
+}
+
 export function usePictureInPicture() {
   const [pipWindow, setPipWindow] = useState<Window | null>(null);
-  const isSupported =
-    typeof window !== "undefined" && "documentPictureInPicture" in window;
+  // El soporte de la API es constante en la sesión del navegador, así que no
+  // hace falta suscribirse a cambios: solo usamos useSyncExternalStore para
+  // que el primer render del cliente coincida con el del servidor (donde
+  // `window` no existe) y no se produzca un mismatch de hidratación.
+  const isSupported = useSyncExternalStore(
+    subscribeNoop,
+    getIsSupportedSnapshot,
+    getIsSupportedServerSnapshot,
+  );
 
   const openPip = useCallback(async () => {
     if (!isSupported || !window.documentPictureInPicture) return;
