@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { usePomodoro, PomodoroPhase } from "../../hooks/usePomodoro";
 import { usePictureInPicture } from "../../hooks/usePictureInPicture";
@@ -39,6 +39,17 @@ function notifyPhaseComplete(completedPhase: PomodoroPhase) {
 }
 
 export default function PomodoroContainer() {
+  // onPhaseComplete necesita una identidad estable entre renders: si fuera un
+  // arrow function inline, cambiaría en cada render y encadenaría (vía
+  // handlePhaseCompletion/syncTimeLeft dentro del hook) un reinicio del efecto
+  // principal del timer en cada tick, dejando el countdown congelado. Por eso
+  // se guarda la preferencia en un ref y se expone un callback estable.
+  const notificationsEnabledRef = useRef(true);
+  const handlePhaseComplete = useCallback((completedPhase: PomodoroPhase) => {
+    playAlertSound();
+    if (notificationsEnabledRef.current) notifyPhaseComplete(completedPhase);
+  }, []);
+
   const {
     focusTime,
     breakTime,
@@ -67,11 +78,12 @@ export default function PomodoroContainer() {
     togglePhase,
     changeMode,
   } = usePomodoro({
-    onPhaseComplete: (completedPhase) => {
-      playAlertSound();
-      if (notificationsEnabled) notifyPhaseComplete(completedPhase);
-    },
+    onPhaseComplete: handlePhaseComplete,
   });
+
+  useEffect(() => {
+    notificationsEnabledRef.current = notificationsEnabled;
+  }, [notificationsEnabled]);
 
   const {
     isSupported: isPipSupported,
@@ -307,7 +319,7 @@ export default function PomodoroContainer() {
               timeLabel={formatTime(timeLeft)}
               variant="active"
               isRunning={isRunning}
-              statText={`${Math.floor((totalForPhase - timeLeft) / 60)} of ${Math.floor(totalForPhase / 60)} used`}
+              statText={`${Math.round(progress * 100)}% used`}
               progress={progress}
             />
             <PhaseCard

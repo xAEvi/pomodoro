@@ -2,6 +2,11 @@
 
 ## 2026-07-29
 
+### Fixed
+
+- **El timer no avanzaba al presionar Start**: el callback `onPhaseComplete` se pasaba como arrow function inline, así que cambiaba de identidad en cada render; eso encadenaba (vía `handlePhaseCompletion`/`syncTimeLeft`) un reinicio del efecto principal del timer en cada tick de 200ms, reseteando `endTimeRef` a "ahora + duración completa" antes de que pasara un segundo real. Se estabilizó el callback con un ref, sin cambiar su comportamiento.
+- El indicador "N of M used" en modo Flex se cambió por un porcentaje (`{n}% used`) sobre el tiempo total de la fase activa.
+
 ### Added
 
 - **Modo "siempre visible" (Picture-in-Picture)**: botón junto al título que abre el timer en una ventana flotante (Document Picture-in-Picture API) para verlo por encima de otras aplicaciones. La ventana incluye fase, tiempo restante, botón Start/Pause y, en modo Flex, Toggle Phase.
