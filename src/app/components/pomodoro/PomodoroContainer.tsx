@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useEffect } from "react";
+import { createPortal } from "react-dom";
 import { usePomodoro, PomodoroPhase } from "../../hooks/usePomodoro";
+import { usePictureInPicture } from "../../hooks/usePictureInPicture";
 import { formatTime } from "../../utils/time";
 import { playAlertSound } from "../../utils/audio";
 import { setFaviconColor } from "../../utils/favicon";
@@ -9,6 +11,7 @@ import ModeSelector from "./ModeSelector";
 import TimerDisplay from "./TimerDisplay";
 import TimerControls from "./TimerControls";
 import SettingsForm from "./SettingsForm";
+import PipTimer from "./PipTimer";
 
 function notifyPhaseComplete(completedPhase: PomodoroPhase) {
   if (typeof window === "undefined" || !("Notification" in window)) return;
@@ -51,6 +54,13 @@ export default function PomodoroContainer() {
     },
   });
 
+  const {
+    isSupported: isPipSupported,
+    pipWindow,
+    openPip,
+    closePip,
+  } = usePictureInPicture();
+
   // Solicitamos permiso de notificaciones una sola vez al montar.
   useEffect(() => {
     if (typeof window === "undefined" || !("Notification" in window)) return;
@@ -69,16 +79,17 @@ export default function PomodoroContainer() {
     timeLeftBreak < initialBreakSeconds ||
     currentSession > 1;
 
+  const timeLeft = currentPhase === "focus" ? timeLeftFocus : timeLeftBreak;
+  const phaseLabel = currentPhase === "focus" ? "Focus" : "Break";
+
   // Título dinámico de la pestaña para ver el timer sin tenerla activa.
   useEffect(() => {
     if (!isRunning) {
       document.title = "Pomodoro";
       return;
     }
-    const timeLeft = currentPhase === "focus" ? timeLeftFocus : timeLeftBreak;
-    const phaseLabel = currentPhase === "focus" ? "Focus" : "Break";
     document.title = `${formatTime(timeLeft)} - ${phaseLabel}`;
-  }, [isRunning, currentPhase, timeLeftFocus, timeLeftBreak]);
+  }, [isRunning, timeLeft, phaseLabel]);
 
   // Favicon dinámico: rojo en foco, celeste en descanso, gris cuando está pausado.
   useEffect(() => {
@@ -159,7 +170,35 @@ export default function PomodoroContainer() {
       <div className="w-full max-w-md p-6 bg-zinc-900/60 border border-zinc-800/80 backdrop-blur-md rounded-[32px] shadow-2xl flex flex-col gap-5 transition-all duration-500">
         {/* Header */}
         <div className="flex justify-between items-center px-1">
-          <h1 className="text-lg font-semibold text-white">Pomodoro</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-lg font-semibold text-white">Pomodoro</h1>
+            {isPipSupported && (
+              <button
+                onClick={() => (pipWindow ? closePip() : openPip())}
+                title="Modo siempre visible (Picture-in-Picture)"
+                aria-pressed={Boolean(pipWindow)}
+                className={`p-1.5 rounded-lg transition-colors ${
+                  pipWindow
+                    ? "text-white bg-zinc-800"
+                    : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50"
+                }`}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="w-4 h-4"
+                >
+                  <rect x="2" y="4" width="20" height="16" rx="2" />
+                  <rect x="12" y="12" width="8" height="6" rx="1" fill="currentColor" />
+                </svg>
+              </button>
+            )}
+          </div>
           <span
             className={`text-xs font-mono transition-colors duration-500 ${textMutedClass}`}
           >
@@ -229,6 +268,20 @@ export default function PomodoroContainer() {
           setAutoStart={setAutoStart}
         />
       </div>
+
+      {pipWindow &&
+        createPortal(
+          <PipTimer
+            phaseLabel={phaseLabel}
+            timeLabel={formatTime(timeLeft)}
+            bgClass={currentPhase === "focus" ? "bg-red-950" : "bg-sky-950"}
+            isRunning={isRunning}
+            activeMode={activeMode}
+            onStartPause={isRunning ? pauseTimer : startTimer}
+            onTogglePhase={togglePhase}
+          />,
+          pipWindow.document.body
+        )}
     </div>
   );
 }

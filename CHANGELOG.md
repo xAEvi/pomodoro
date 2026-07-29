@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-07-29
+
+### Added
+
+- **Modo "siempre visible" (Picture-in-Picture)**: botón junto al título que abre el timer en una ventana flotante (Document Picture-in-Picture API) para verlo por encima de otras aplicaciones. La ventana incluye fase, tiempo restante, botón Start/Pause y, en modo Flex, Toggle Phase.
+
 ## 2026-07-28
 
 ### Added
