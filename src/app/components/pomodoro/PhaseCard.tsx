@@ -1,0 +1,71 @@
+"use client";
+
+import React from "react";
+
+interface PhaseCardProps {
+  label: string; // "focus" | "break"
+  colorKey: "focus" | "break";
+  timeLabel: string;
+  variant: "active" | "banked";
+  isRunning?: boolean; // solo para variant="active"
+  statText?: string; // ej. "62 of 100 used", solo para variant="active"
+  progress?: number; // 0..1, solo para variant="active"
+}
+
+export default function PhaseCard({
+  label,
+  colorKey,
+  timeLabel,
+  variant,
+  isRunning = false,
+  statText,
+  progress = 0,
+}: PhaseCardProps) {
+  const colorText = colorKey === "focus" ? "text-focus" : "text-break";
+  const colorBg = colorKey === "focus" ? "bg-focus" : "bg-break";
+
+  if (variant === "active") {
+    return (
+      <div
+        className={`rounded-xl border p-4 mb-2.5 ${
+          colorKey === "focus"
+            ? "border-focus/50 bg-focus/[0.07]"
+            : "border-break/50 bg-break/[0.07]"
+        }`}
+      >
+        <div className="flex items-center justify-between mb-1.5">
+          <span
+            className={`text-[11px] tracking-wider lowercase ${colorText}`}
+          >
+            {label} · {isRunning ? "running" : "paused"}
+          </span>
+          {statText && (
+            <span className="text-[11px] text-muted">{statText}</span>
+          )}
+        </div>
+        <div className="font-mono text-4xl text-ink tracking-tight leading-tight tabular-nums">
+          {timeLabel}
+        </div>
+        <div className="h-[3px] rounded-full bg-white/[0.09] mt-3">
+          <span
+            className={`block h-[3px] rounded-full transition-[width] duration-500 ease-linear ${colorBg}`}
+            style={{ width: `${Math.min(100, Math.max(0, progress * 100))}%` }}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-xl border border-line p-3.5 mb-auto">
+      <div className="flex items-center justify-between">
+        <span className="text-[11px] tracking-wider text-faint lowercase">
+          {label} · banked
+        </span>
+        <span className="font-mono text-[22px] text-muted tabular-nums">
+          {timeLabel}
+        </span>
+      </div>
+    </div>
+  );
+}

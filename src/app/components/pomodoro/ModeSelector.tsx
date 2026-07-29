@@ -33,28 +33,28 @@ export default function ModeSelector({
   };
 
   return (
-    <div className="flex w-full gap-2 p-1 bg-zinc-900 rounded-2xl border border-zinc-800">
+    <div className="flex bg-white/5 rounded-full p-[3px]">
       <button
         onClick={() => handleModeChange("classic")}
         disabled={disabled}
-        className={`flex-1 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 ${
+        className={`flex-1 text-center text-xs py-[5px] rounded-full transition-colors duration-200 ${
           activeMode === "classic"
-            ? "bg-zinc-800 text-white shadow-sm"
-            : "text-zinc-400 hover:text-zinc-200 disabled:opacity-50"
+            ? "bg-ink text-[#101318] font-medium"
+            : "text-muted hover:text-zinc-200 disabled:opacity-50"
         }`}
       >
-        Classic Mode
+        Classic
       </button>
       <button
         onClick={() => handleModeChange("flex")}
         disabled={disabled}
-        className={`flex-1 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 ${
+        className={`flex-1 text-center text-xs py-[5px] rounded-full transition-colors duration-200 ${
           activeMode === "flex"
-            ? "bg-zinc-800 text-white shadow-sm"
-            : "text-zinc-400 hover:text-zinc-200 disabled:opacity-50"
+            ? "bg-ink text-[#101318] font-medium"
+            : "text-muted hover:text-zinc-200 disabled:opacity-50"
         }`}
       >
-        Flex Mode
+        Flex
       </button>
     </div>
   );

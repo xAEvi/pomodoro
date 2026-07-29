@@ -6,6 +6,16 @@
 
 - **Modo "siempre visible" (Picture-in-Picture)**: botón junto al título que abre el timer en una ventana flotante (Document Picture-in-Picture API) para verlo por encima de otras aplicaciones. La ventana incluye fase, tiempo restante, botón Start/Pause y, en modo Flex, Toggle Phase.
 - **Sonidos ambientales opcionales durante el foco**: toggle "Ambient sound during focus" con dos opciones (lluvia / ruido blanco) generadas con la Web Audio API, que solo suenan mientras el timer corre en fase de foco.
+- **Rediseño completo de la interfaz** siguiendo una nueva referencia de diseño:
+  - Modo clásico: anillo de progreso circular con la fase y el tiempo restante dentro, más una línea "ends HH:MM".
+  - Modo flex: tarjetas emparejadas (fase activa con progreso y "N of M used" · fase banked, más discreta).
+  - Barra de sesiones segmentada bajo el timer (reemplaza los puntos sueltos), con "Session X of Y" / minutos restantes en clásico y la línea "Block budget" (`4 × 25/5 · 2 h 00 m`) en flex.
+  - La configuración se movió a una hoja modal detrás del ícono de engranaje, en vez de un formulario siempre visible compitiendo con el timer.
+  - Jerarquía de botones: pastilla rellena para Start/Pause, pastilla con borde para cambiar de fase (nombra el destino, ej. "Break"), botón ícono para Reset.
+  - Ícono de sonido ambiental en el header con tinte turquesa cuando está activo, en vez de un checkbox al final de la tarjeta.
+  - Footer con los atajos de teclado disponibles.
+  - Nuevo toggle de **Notifications** en la hoja de configuración para habilitar/deshabilitar las notificaciones del navegador.
+  - Color de acento de la fase de descanso cambiado de celeste a turquesa (`#5dcaa5`), incluyendo favicon y ventana de Picture-in-Picture.
 
 ### Fixed
 
@@ -15,7 +25,7 @@
 
 ### Docs
 
-- `README.md`: se actualizó "Key Features" y "How to use" para reflejar todas las funcionalidades agregadas hasta la fecha (persistencia, notificaciones, atajos de teclado, presets, favicon dinámico, progreso de sesiones, Picture-in-Picture y sonido ambiental).
+- `README.md`: se actualizó "Key Features" y "How to use" para reflejar todas las funcionalidades agregadas hasta la fecha (persistencia, notificaciones, atajos de teclado, presets, favicon dinámico, progreso de sesiones, Picture-in-Picture, sonido ambiental y el rediseño de la interfaz).
 
 ## 2026-07-28
 

@@ -1,12 +1,14 @@
 "use client";
 
 import React from "react";
-import { PomodoroMode } from "../../hooks/usePomodoro";
+import { PomodoroMode, PomodoroPhase } from "../../hooks/usePomodoro";
 import { playClickSound } from "../../utils/audio";
+import { PlayIcon, PauseIcon, RefreshIcon, ArrowsExchangeIcon } from "./icons";
 
 interface TimerControlsProps {
   isRunning: boolean;
   activeMode: PomodoroMode;
+  currentPhase: PomodoroPhase;
   onStartPause: () => void;
   onReset: () => void;
   onTogglePhase: () => void;
@@ -15,6 +17,7 @@ interface TimerControlsProps {
 export default function TimerControls({
   isRunning,
   activeMode,
+  currentPhase,
   onStartPause,
   onReset,
   onTogglePhase,
@@ -24,34 +27,39 @@ export default function TimerControls({
     callback();
   };
 
+  const nextPhaseLabel = currentPhase === "focus" ? "Break" : "Focus";
+
   return (
-    <div className="flex items-center justify-center gap-3 w-full">
+    <div className="flex items-center gap-2 mt-4">
       <button
         onClick={() => handleAction(onStartPause)}
-        className={`flex-1 py-4 text-sm font-bold rounded-2xl transition-all duration-200 active:scale-[0.98] ${
-          isRunning
-            ? "bg-zinc-800 border border-zinc-700 text-zinc-100 hover:bg-zinc-700/80"
-            : "bg-white text-black hover:bg-zinc-100"
-        }`}
+        className="flex-1 h-11 rounded-full bg-ink text-[#101318] text-sm font-medium flex items-center justify-center gap-1.5 transition-transform active:scale-[0.98]"
       >
+        {isRunning ? (
+          <PauseIcon className="w-4 h-4" />
+        ) : (
+          <PlayIcon className="w-4 h-4" />
+        )}
         {isRunning ? "Pause" : "Start"}
       </button>
 
       {activeMode === "flex" && (
         <button
           onClick={() => handleAction(onTogglePhase)}
-          className="flex-1 py-4 text-sm font-bold rounded-2xl bg-zinc-900 border border-zinc-800 text-zinc-200 hover:bg-zinc-800/60 transition-all duration-200 active:scale-[0.98]"
+          className="h-11 px-4 rounded-full border border-white/[0.16] text-ink text-[13px] flex items-center gap-1.5 hover:bg-white/5 transition-colors"
         >
-          Toggle Phase
+          <ArrowsExchangeIcon className="w-4 h-4" />
+          {nextPhaseLabel}
         </button>
       )}
 
       <button
         onClick={() => handleAction(onReset)}
-        className="px-5 py-4 text-sm font-bold rounded-2xl bg-zinc-950 border border-zinc-900 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900/30 transition-all duration-200"
+        aria-label="Reset"
         title="Reset timer"
+        className="w-11 h-11 rounded-full border border-white/[0.12] text-muted flex items-center justify-center hover:text-zinc-200 hover:bg-white/5 transition-colors"
       >
-        Reset
+        <RefreshIcon className="w-[17px] h-[17px]" />
       </button>
     </div>
   );

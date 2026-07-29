@@ -59,6 +59,9 @@ export function usePomodoro({
   const [ambientSoundType, setAmbientSoundType] = useState<AmbientSoundType>(
     persisted?.ambientSoundType ?? "rain",
   );
+  const [notificationsEnabled, setNotificationsEnabled] = useState(
+    persisted?.notificationsEnabled ?? true,
+  );
 
   // Estados del temporizador (en segundos)
   const multiplierInit = activeMode === "flex" ? sessions : 1;
@@ -72,6 +75,13 @@ export function usePomodoro({
   // Referencias para el loop de alta precisión
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const endTimeRef = useRef<number | null>(restoredEndTime);
+
+  // Espejo en estado de endTimeRef, solo para exponerlo a la UI (ej. "ends
+  // 14:26"). Se actualiza desde syncTimeLeft/las acciones de usuario, nunca
+  // directamente en el cuerpo de un efecto.
+  const [endTime, setEndTime] = useState<number | null>(
+    restoredWasRunning ? restoredEndTime : null,
+  );
 
   // Referencia para saber si el cronómetro ha sido alterado o iniciado
   const isDirtyRef = useRef(restoredWasRunning || (persisted?.currentSession ?? 1) > 1);
@@ -99,6 +109,7 @@ export function usePomodoro({
       setIsRunning(false);
       if (intervalRef.current) clearInterval(intervalRef.current);
       endTimeRef.current = null;
+      setEndTime(null);
 
       onPhaseComplete?.(finishedPhase);
 
@@ -130,6 +141,8 @@ export function usePomodoro({
   // navegador puede haber demorado por sus políticas de throttling.
   const syncTimeLeft = useCallback(() => {
     if (!endTimeRef.current) return;
+
+    setEndTime(endTimeRef.current);
 
     const msRemaining = endTimeRef.current - Date.now();
     const secondsRemaining = Math.max(0, Math.ceil(msRemaining / 1000));
@@ -198,6 +211,7 @@ export function usePomodoro({
   const pauseTimer = useCallback(() => {
     setIsRunning(false);
     endTimeRef.current = null; // Limpiamos la referencia para que se recalcule al reanudar
+    setEndTime(null);
   }, []);
 
   const resetTimer = useCallback(() => {
@@ -212,6 +226,7 @@ export function usePomodoro({
     setTimeLeftFocus(focusTime * 60 * multiplier);
     setTimeLeftBreak(breakTime * 60 * multiplier);
     endTimeRef.current = null;
+    setEndTime(null);
   }, [focusTime, breakTime, sessions, activeMode]);
 
   const togglePhase = useCallback(() => {
@@ -235,6 +250,7 @@ export function usePomodoro({
       setTimeLeftFocus(focusTime * 60 * multiplier);
       setTimeLeftBreak(breakTime * 60 * multiplier);
       endTimeRef.current = null;
+      setEndTime(null);
     },
     [focusTime, breakTime, sessions],
   );
@@ -249,10 +265,11 @@ export function usePomodoro({
       currentPhase,
       currentSession,
       isRunning,
-      endTime: isRunning ? endTimeRef.current : null,
+      endTime: isRunning ? endTime : null,
       autoStart,
       ambientSoundEnabled,
       ambientSoundType,
+      notificationsEnabled,
     });
   }, [
     focusTime,
@@ -262,9 +279,11 @@ export function usePomodoro({
     currentPhase,
     currentSession,
     isRunning,
+    endTime,
     autoStart,
     ambientSoundEnabled,
     ambientSoundType,
+    notificationsEnabled,
   ]);
 
   return {
@@ -280,12 +299,15 @@ export function usePomodoro({
     activeMode,
     currentSession,
     isRunning,
+    endTime,
     autoStart,
     setAutoStart,
     ambientSoundEnabled,
     setAmbientSoundEnabled,
     ambientSoundType,
     setAmbientSoundType,
+    notificationsEnabled,
+    setNotificationsEnabled,
     startTimer,
     pauseTimer,
     resetTimer,

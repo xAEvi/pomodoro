@@ -22,3 +22,30 @@ export function formatTime(seconds: number): string {
 
   return `${formattedMinutes}:${formattedSeconds}`;
 }
+
+/**
+ * Formatea una cantidad de minutos como duración legible en horas y minutos.
+ *
+ * @example
+ * formatDurationHM(120) // "2 h 00 m"
+ * formatDurationHM(45)  // "45 m"
+ */
+export function formatDurationHM(totalMinutes: number): string {
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  if (hours <= 0) {
+    return `${minutes} m`;
+  }
+  return `${hours} h ${String(minutes).padStart(2, "0")} m`;
+}
+
+/**
+ * Formatea un timestamp absoluto (ms) como hora local "HH:MM".
+ */
+export function formatClockTime(timestampMs: number): string {
+  const date = new Date(timestampMs);
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  return `${hours}:${minutes}`;
+}
