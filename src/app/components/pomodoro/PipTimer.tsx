@@ -43,6 +43,20 @@ export default function PipTimer({
       <span className="text-4xl font-mono text-ink tabular-nums tracking-tight">
         {timeLabel}
       </span>
+
+      <div className="mt-1.5 w-[82%] max-w-[220px]">
+        <div className="flex items-center justify-between text-[10px] text-faint mb-1 tabular-nums">
+          <span>{progressPercent}%</span>
+          <span>{100 - progressPercent}% left</span>
+        </div>
+        <div className="h-1.5 w-full rounded-full bg-white/10 border border-white/[0.06] overflow-hidden">
+          <div
+            className={`h-full rounded-full transition-[width] duration-500 ease-linear ${bgFill}`}
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
+      </div>
+
       <div className="mt-1.5 flex items-center gap-1.5">
         <button
           onClick={onStartPause}
@@ -64,19 +78,6 @@ export default function PipTimer({
             Switch
           </button>
         )}
-      </div>
-
-      <div className="mt-2.5 w-[82%] max-w-[220px]">
-        <div className="flex items-center justify-between text-[10px] text-faint mb-1 tabular-nums">
-          <span>{progressPercent}%</span>
-          <span>{100 - progressPercent}% left</span>
-        </div>
-        <div className="h-1.5 w-full rounded-full bg-white/10 border border-white/[0.06] overflow-hidden">
-          <div
-            className={`h-full rounded-full transition-[width] duration-500 ease-linear ${bgFill}`}
-            style={{ width: `${progressPercent}%` }}
-          />
-        </div>
       </div>
     </div>
   );
