@@ -12,6 +12,8 @@ export interface PersistedPomodoroState {
   currentSession: number;
   isRunning: boolean;
   endTime: number | null;
+  timeLeftFocus: number;
+  timeLeftBreak: number;
   autoStart: boolean;
   ambientSoundEnabled: boolean;
   ambientSoundType: AmbientSoundType;

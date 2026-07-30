@@ -21,13 +21,25 @@ const restoredEndTime =
     : null;
 const restoredWasRunning = persisted?.isRunning && restoredEndTime !== null;
 
+// Valor "banked" de una fase: el que tenía guardado la última vez que se
+// persistió el estado, sin importar si esa fase estaba corriendo o no. Esto
+// es lo que le permite a la fase inactiva (ej. break mientras corre focus en
+// modo Flex) sobrevivir a un refresh en vez de reiniciarse a su duración completa.
+function restoredBankedTimeLeft(phase: PomodoroPhase, fallback: number): number {
+  const persistedValue =
+    phase === "focus" ? persisted?.timeLeftFocus : persisted?.timeLeftBreak;
+  return persistedValue ?? fallback;
+}
+
 function restoredTimeLeft(phase: PomodoroPhase, fallback: number): number {
+  const banked = restoredBankedTimeLeft(phase, fallback);
+
   if (
     !restoredWasRunning ||
     !restoredEndTime ||
     persisted?.currentPhase !== phase
   ) {
-    return fallback;
+    return banked;
   }
   return Math.max(0, Math.ceil((restoredEndTime - Date.now()) / 1000));
 }
@@ -83,8 +95,16 @@ export function usePomodoro({
     restoredWasRunning ? restoredEndTime : null,
   );
 
-  // Referencia para saber si el cronómetro ha sido alterado o iniciado
-  const isDirtyRef = useRef(restoredWasRunning || (persisted?.currentSession ?? 1) > 1);
+  // Referencia para saber si el cronómetro ha sido alterado o iniciado. También
+  // se considera "dirty" si alguna de las fases tenía un tiempo banked distinto
+  // al de una sesión recién iniciada, para no perder ese progreso al montar
+  // (ver los efectos de sincronización de inputs más abajo).
+  const isDirtyRef = useRef(
+    restoredWasRunning ||
+      (persisted?.currentSession ?? 1) > 1 ||
+      timeLeftFocus !== focusTime * 60 * multiplierInit ||
+      timeLeftBreak !== breakTime * 60 * multiplierInit,
+  );
 
   /**
    * Sincronizar cambios de configuración de inputs.
@@ -266,6 +286,8 @@ export function usePomodoro({
       currentSession,
       isRunning,
       endTime: isRunning ? endTime : null,
+      timeLeftFocus,
+      timeLeftBreak,
       autoStart,
       ambientSoundEnabled,
       ambientSoundType,
@@ -280,6 +302,8 @@ export function usePomodoro({
     currentSession,
     isRunning,
     endTime,
+    timeLeftFocus,
+    timeLeftBreak,
     autoStart,
     ambientSoundEnabled,
     ambientSoundType,

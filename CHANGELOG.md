@@ -7,6 +7,10 @@
 - **Fondo dinámico según la fase**: el fondo de la app (y el de la ventana de Picture-in-Picture) ahora cambia según la fase activa: un tinte rojo durante el foco y uno cian durante el descanso, con transición suave entre ambos.
 - **Barra de progreso en Picture-in-Picture**: la ventana flotante ahora muestra, entre el contador y los botones, una barra de progreso lineal (con el porcentaje transcurrido y el que falta) para ver de un vistazo cuánto queda de la fase activa sin necesitar la pestaña principal.
 
+### Fixed
+
+- **En modo Flex, el contador de la fase inactiva se reiniciaba al refrescar**: solo se persistía el `endTime` de la fase que estaba corriendo, así que el tiempo restante "banked" de la otra fase (ej. break dejado en 19:59 mientras corría focus) nunca se guardaba y volvía a su duración completa tras un refresh. Ahora `timeLeftFocus` y `timeLeftBreak` se persisten explícitamente y se restauran ambos al recargar la página.
+
 ## 2026-07-29
 
 ### Fixed
