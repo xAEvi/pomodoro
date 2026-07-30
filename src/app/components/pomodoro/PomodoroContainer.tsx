@@ -392,6 +392,7 @@ export default function PomodoroContainer() {
             colorKey={currentPhase}
             isRunning={isRunning}
             activeMode={activeMode}
+            progress={progress}
             onStartPause={isRunning ? pauseTimer : startTimer}
             onTogglePhase={togglePhase}
           />,

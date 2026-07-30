@@ -5,6 +5,7 @@
 ### Added
 
 - **Fondo dinámico según la fase**: el fondo de la app (y el de la ventana de Picture-in-Picture) ahora cambia según la fase activa: un tinte rojo durante el foco y uno cian durante el descanso, con transición suave entre ambos.
+- **Barra de progreso en Picture-in-Picture**: la ventana flotante ahora muestra una barra de progreso lineal (con el porcentaje transcurrido y el que falta) para ver de un vistazo cuánto queda de la fase activa sin necesitar la pestaña principal.
 
 ## 2026-07-29
 
