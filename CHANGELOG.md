@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-07-30
+
+### Added
+
+- **Fondo dinámico según la fase**: el fondo de la app (y el de la ventana de Picture-in-Picture) ahora cambia según la fase activa: un tinte rojo durante el foco y uno cian durante el descanso, con transición suave entre ambos.
+
 ## 2026-07-29
 
 ### Fixed

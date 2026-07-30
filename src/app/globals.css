@@ -16,6 +16,11 @@
   --color-line-soft: rgba(255, 255, 255, 0.06);
   --color-focus: #e24b4a;
   --color-break: #5dcaa5;
+  --color-cyan: #22d3ee;
+
+  /* Fondo de fase: variantes atenuadas de rojo (focus) y cian (break) sobre el canvas oscuro */
+  --color-focus-wash: color-mix(in srgb, var(--color-focus) 20%, var(--color-canvas));
+  --color-break-wash: color-mix(in srgb, var(--color-cyan) 20%, var(--color-canvas));
 }
 
 @theme inline {
@@ -35,6 +40,9 @@
   --color-line-soft: var(--color-line-soft);
   --color-focus: var(--color-focus);
   --color-break: var(--color-break);
+  --color-cyan: var(--color-cyan);
+  --color-focus-wash: var(--color-focus-wash);
+  --color-break-wash: var(--color-break-wash);
 }
 
 @media (prefers-color-scheme: dark) {

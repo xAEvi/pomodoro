@@ -212,7 +212,11 @@ export default function PomodoroContainer() {
   const otherColorKey = currentPhase === "focus" ? "break" : "focus";
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center p-4 bg-canvas">
+    <div
+      className={`min-h-screen w-full flex items-center justify-center p-4 transition-colors duration-700 ${
+        currentPhase === "focus" ? "bg-focus-wash" : "bg-break-wash"
+      }`}
+    >
       <div className="w-full max-w-md bg-surface border border-line rounded-2xl p-[18px] min-h-[430px] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">

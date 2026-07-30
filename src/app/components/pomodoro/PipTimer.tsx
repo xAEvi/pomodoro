@@ -24,9 +24,12 @@ export default function PipTimer({
   onTogglePhase,
 }: PipTimerProps) {
   const colorText = colorKey === "focus" ? "text-focus" : "text-break";
+  const bgWash = colorKey === "focus" ? "bg-focus-wash" : "bg-break-wash";
 
   return (
-    <div className="h-screen w-screen flex flex-col items-center justify-center gap-1.5 bg-canvas">
+    <div
+      className={`h-screen w-screen flex flex-col items-center justify-center gap-1.5 transition-colors duration-700 ${bgWash}`}
+    >
       <span
         className={`text-[11px] lowercase tracking-widest font-medium transition-colors duration-500 ${colorText}`}
       >
