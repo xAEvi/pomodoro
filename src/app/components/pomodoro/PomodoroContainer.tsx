@@ -211,6 +211,9 @@ export default function PomodoroContainer() {
   const otherPhaseLabel = currentPhase === "focus" ? "break" : "focus";
   const otherColorKey = currentPhase === "focus" ? "break" : "focus";
 
+  const flexEndsAtLabel =
+    isRunning && endTime ? formatClockTime(endTime + otherPhaseTimeLeft * 1000) : null;
+
   return (
     <div
       className={`min-h-screen w-full flex items-center justify-center p-4 transition-colors duration-700 ${
@@ -345,6 +348,9 @@ export default function PomodoroContainer() {
               currentSession={flexSyntheticSession}
               colorClass={currentPhase === "focus" ? "bg-focus" : "bg-break"}
             />
+            <div className="flex justify-between text-[11px] text-faint mt-1.5 h-4">
+              <span>{flexEndsAtLabel ? `ends ${flexEndsAtLabel}` : ""}</span>
+            </div>
           </div>
         )}
 

@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-07-31
+
+### Added
+
+- **Hora de finalización combinada en modo Flex**: en la vista normal de la aplicación, el temporizador en modo Flex ahora calcula y muestra la hora exacta en que terminarán ambos procesos combinados (focus + break restantes), siguiendo el mismo estilo visual "ends HH:MM" del modo clásico.
+
 ## 2026-07-30
 
 ### Added
