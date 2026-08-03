@@ -1,21 +1,15 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { AmbientSoundType } from "../../utils/audio";
 import { formatDurationHM } from "../../utils/time";
-import { CloseIcon } from "./icons";
-
-interface Preset {
-  label: string;
-  focusTime: number;
-  breakTime: number;
-}
-
-const PRESETS: Preset[] = [
-  { label: "25 / 5", focusTime: 25, breakTime: 5 },
-  { label: "50 / 10", focusTime: 50, breakTime: 10 },
-  { label: "90 / 20", focusTime: 90, breakTime: 20 },
-];
+import { PomodoroProfile } from "../../utils/profiles";
+import { ProfileFormData } from "../../hooks/useProfiles";
+import { CloseIcon, PlusIcon } from "./icons";
+import ProfileSelector from "./ProfileSelector";
+import ProfileModal from "./ProfileModal";
+import ConfirmModal from "./ConfirmModal";
+import Toast from "./Toast";
 
 interface SettingsSheetProps {
   open: boolean;
@@ -35,6 +29,13 @@ interface SettingsSheetProps {
   setAmbientSoundType: (value: AmbientSoundType) => void;
   notificationsEnabled: boolean;
   setNotificationsEnabled: (value: boolean) => void;
+  profiles: PomodoroProfile[];
+  defaultProfileId: string;
+  addProfile: (data: ProfileFormData) => PomodoroProfile;
+  updateProfile: (id: string, data: ProfileFormData) => void;
+  deleteProfile: (id: string) => void;
+  setAsDefault: (id: string) => void;
+  reorderProfiles: (orderedIds: string[]) => void;
 }
 
 function Switch({ on }: { on: boolean }) {
@@ -69,14 +70,68 @@ export default function SettingsSheet({
   setAmbientSoundType,
   notificationsEnabled,
   setNotificationsEnabled,
+  profiles,
+  defaultProfileId,
+  addProfile,
+  updateProfile,
+  deleteProfile,
+  setAsDefault,
+  reorderProfiles,
 }: SettingsSheetProps) {
+  const [modalProfile, setModalProfile] = useState<PomodoroProfile | null | undefined>(
+    undefined,
+  ); // undefined = cerrado, null = crear, perfil = editar
+  const [deleteTarget, setDeleteTarget] = useState<PomodoroProfile | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
   if (!open) return null;
 
-  const matchesPreset = PRESETS.some(
-    (preset) => preset.focusTime === focusTime && preset.breakTime === breakTime,
+  const activeProfile = profiles.find(
+    (p) =>
+      p.focusTime === focusTime && p.breakTime === breakTime && p.sessions === sessions,
   );
   const totalMinutes = sessions * (focusTime + breakTime);
   const ambientLabel = ambientSoundType === "rain" ? "Rain" : "White noise";
+
+  const applyProfile = (profile: PomodoroProfile) => {
+    if (disabled) return;
+    setFocusTime(profile.focusTime);
+    setBreakTime(profile.breakTime);
+    setSessions(profile.sessions);
+  };
+
+  const handleSaveProfile = (data: ProfileFormData) => {
+    if (modalProfile) {
+      updateProfile(modalProfile.id, data);
+      // Si el perfil editado es el activo, reflejamos los nuevos valores de inmediato.
+      if (
+        activeProfile?.id === modalProfile.id ||
+        (modalProfile.focusTime === focusTime &&
+          modalProfile.breakTime === breakTime &&
+          modalProfile.sessions === sessions)
+      ) {
+        applyProfile({ ...modalProfile, ...data });
+      }
+      setToastMessage(`Perfil "${data.name}" actualizado`);
+    } else {
+      const created = addProfile(data);
+      applyProfile(created);
+      setToastMessage(`Perfil "${data.name}" creado`);
+    }
+    setModalProfile(undefined);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!deleteTarget) return;
+    const wasActive = activeProfile?.id === deleteTarget.id;
+    deleteProfile(deleteTarget.id);
+    setToastMessage(`Perfil "${deleteTarget.name}" eliminado`);
+    setDeleteTarget(null);
+    if (wasActive) {
+      const fallback = profiles.find((p) => p.id !== deleteTarget.id);
+      if (fallback) applyProfile(fallback);
+    }
+  };
 
   return (
     <div
@@ -102,44 +157,24 @@ export default function SettingsSheet({
           </button>
         </div>
 
-        <div
-          className={`flex gap-2 mb-4 flex-wrap transition-opacity ${
-            disabled ? "opacity-50 pointer-events-none" : ""
-          }`}
-        >
-          {PRESETS.map((preset) => {
-            const isActive =
-              preset.focusTime === focusTime && preset.breakTime === breakTime;
-            return (
-              <button
-                key={preset.label}
-                type="button"
-                onClick={() => {
-                  setFocusTime(preset.focusTime);
-                  setBreakTime(preset.breakTime);
-                }}
-                className={`text-xs px-3.5 py-1.5 rounded-full transition-colors ${
-                  isActive
-                    ? "bg-ink text-[#101318]"
-                    : "border border-white/[0.14] text-[#C9CFD8] hover:border-white/30"
-                }`}
-              >
-                {preset.label}
-              </button>
-            );
-          })}
-          <span
-            className={`text-xs px-3.5 py-1.5 rounded-full border border-dashed ${
-              matchesPreset
-                ? "border-white/[0.14] text-muted"
-                : "border-white/30 text-[#C9CFD8]"
-            }`}
-          >
-            Custom
-          </span>
+        <div className="mb-4">
+          <ProfileSelector
+            profiles={profiles}
+            activeProfile={activeProfile}
+            defaultProfileId={defaultProfileId}
+            disabled={disabled}
+            onSelect={applyProfile}
+            onEdit={(profile) => setModalProfile(profile)}
+            onSetDefault={(profile) => {
+              setAsDefault(profile.id);
+              setToastMessage(`"${profile.name}" es ahora el perfil predeterminado`);
+            }}
+            onDelete={(profile) => setDeleteTarget(profile)}
+            onReorder={reorderProfiles}
+          />
         </div>
 
-        <div className="grid grid-cols-3 gap-3 mb-4">
+        <div className="grid grid-cols-3 gap-3 mb-3">
           <label className="bg-white/[0.04] rounded-[10px] px-3 py-2.5 block">
             <span className="block text-[11px] text-muted mb-1">Focus</span>
             <span className="flex items-baseline justify-between gap-1">
@@ -196,6 +231,16 @@ export default function SettingsSheet({
             </span>
           </label>
         </div>
+
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={() => setModalProfile(null)}
+          className="w-full flex items-center justify-center gap-1.5 text-xs text-muted hover:text-ink py-2 mb-4 rounded-[10px] border border-dashed border-white/[0.14] hover:border-white/30 transition-colors disabled:opacity-50 disabled:pointer-events-none"
+        >
+          <PlusIcon className="w-3.5 h-3.5" />
+          Crear perfil
+        </button>
 
         <div className="border-t border-line-soft">
           <button
@@ -255,6 +300,26 @@ export default function SettingsSheet({
           </button>
         </div>
       </div>
+
+      <ProfileModal
+        key={modalProfile === undefined ? "closed" : (modalProfile?.id ?? "create")}
+        open={modalProfile !== undefined}
+        profile={modalProfile ?? null}
+        onClose={() => setModalProfile(undefined)}
+        onSave={handleSaveProfile}
+      />
+
+      <ConfirmModal
+        open={deleteTarget !== null}
+        title="¿Deseas eliminar este perfil?"
+        message={`¿Deseas eliminar "${deleteTarget?.name}"? Esta acción no se puede deshacer`}
+        confirmLabel="Eliminar"
+        danger
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
+
+      <Toast message={toastMessage} onDismiss={() => setToastMessage(null)} />
     </div>
   );
 }

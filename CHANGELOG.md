@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-08-03
+
+### Added
+
+- **Perfiles personalizados en Settings**: se reemplazaron los presets fijos (25/5, 50/10, 90/20) por un selector de perfiles completo. Los usuarios pueden crear, editar y eliminar sus propios perfiles de Focus/Break/Sessions desde un modal dedicado (con validación de límites y cálculo de duración total en tiempo real), marcar uno como predeterminado (se carga automáticamente en la primera visita, indicado con una estrella), reordenarlos por drag & drop y ver una notificación toast al crear/editar/eliminar. Los tres perfiles predefinidos originales se mantienen como semilla y no pueden eliminarse, solo editarse. Todo persiste en localStorage bajo una clave separada (`pomodoro-profiles`).
+
 ## 2026-07-31
 
 ### Added

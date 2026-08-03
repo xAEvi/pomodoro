@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { usePomodoro, PomodoroPhase } from "../../hooks/usePomodoro";
 import { usePictureInPicture } from "../../hooks/usePictureInPicture";
+import { useProfiles } from "../../hooks/useProfiles";
 import { formatTime, formatDurationHM, formatClockTime } from "../../utils/time";
 import {
   playAlertSound,
@@ -11,6 +12,7 @@ import {
   stopAmbientSound,
 } from "../../utils/audio";
 import { setFaviconColor } from "../../utils/favicon";
+import { hasPersistedState } from "../../utils/storage";
 import ModeSelector from "./ModeSelector";
 import ProgressRing from "./ProgressRing";
 import SessionBar from "./SessionBar";
@@ -92,7 +94,31 @@ export default function PomodoroContainer() {
     closePip,
   } = usePictureInPicture();
 
+  const {
+    profiles,
+    defaultProfileId,
+    defaultProfile,
+    addProfile,
+    updateProfile,
+    deleteProfile,
+    setAsDefault,
+    reorderProfiles,
+  } = useProfiles();
+
   const [settingsOpen, setSettingsOpen] = useState(false);
+
+  // En la primerísima visita (sin estado de timer persistido todavía), cargamos
+  // el perfil predeterminado en vez de los valores de fábrica (25/5/4).
+  const appliedInitialProfileRef = useRef(false);
+  useEffect(() => {
+    if (appliedInitialProfileRef.current) return;
+    appliedInitialProfileRef.current = true;
+    if (hasPersistedState() || !defaultProfile) return;
+
+    setFocusTime(defaultProfile.focusTime);
+    setBreakTime(defaultProfile.breakTime);
+    setSessions(defaultProfile.sessions);
+  }, [defaultProfile, setFocusTime, setBreakTime, setSessions]);
 
   // Solicitamos permiso de notificaciones cuando el usuario las tiene habilitadas.
   useEffect(() => {
@@ -388,6 +414,13 @@ export default function PomodoroContainer() {
         setAmbientSoundType={setAmbientSoundType}
         notificationsEnabled={notificationsEnabled}
         setNotificationsEnabled={setNotificationsEnabled}
+        profiles={profiles}
+        defaultProfileId={defaultProfileId}
+        addProfile={addProfile}
+        updateProfile={updateProfile}
+        deleteProfile={deleteProfile}
+        setAsDefault={setAsDefault}
+        reorderProfiles={reorderProfiles}
       />
 
       {pipWindow &&

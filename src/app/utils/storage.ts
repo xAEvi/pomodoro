@@ -32,6 +32,11 @@ export function loadState(): Partial<PersistedPomodoroState> | null {
   }
 }
 
+export function hasPersistedState(): boolean {
+  if (typeof window === "undefined") return false;
+  return window.localStorage.getItem(STORAGE_KEY) !== null;
+}
+
 export function saveState(state: PersistedPomodoroState): void {
   if (typeof window === "undefined") return;
 
