@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { PomodoroProfile } from "../../utils/profiles";
 import {
   CheckIcon,
@@ -36,24 +37,29 @@ export default function ProfileSelector({
   onReorder,
 }: ProfileSelectorProps) {
   const [open, setOpen] = useState(false);
-  const [menuFor, setMenuFor] = useState<string | null>(null);
+  const [menu, setMenu] = useState<{ id: string; top: number; left: number } | null>(
+    null,
+  );
   const [dragId, setDragId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!open) return;
 
     const handleClickOutside = (event: MouseEvent) => {
-      if (!rootRef.current?.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (menuRef.current?.contains(target)) return;
+      if (!rootRef.current?.contains(target)) {
         setOpen(false);
-        setMenuFor(null);
+        setMenu(null);
       }
     };
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setOpen(false);
-        setMenuFor(null);
+        setMenu(null);
       }
     };
 
@@ -64,6 +70,23 @@ export default function ProfileSelector({
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [open]);
+
+  const MENU_WIDTH = 176; // px, w-44
+
+  const toggleMenu = (profileId: string, button: HTMLButtonElement) => {
+    setMenu((prev) => {
+      if (prev?.id === profileId) return null;
+      const rect = button.getBoundingClientRect();
+      return {
+        id: profileId,
+        top: rect.bottom + 4,
+        left: Math.min(
+          rect.right - MENU_WIDTH,
+          window.innerWidth - MENU_WIDTH - 8,
+        ),
+      };
+    });
+  };
 
   const handleDrop = (targetId: string) => {
     if (!dragId || dragId === targetId) {
@@ -144,6 +167,7 @@ export default function ProfileSelector({
                   onClick={() => {
                     onSelect(profile);
                     setOpen(false);
+                    setMenu(null);
                   }}
                   className="flex-1 min-w-0 flex items-center gap-1.5 text-left"
                 >
@@ -171,63 +195,76 @@ export default function ProfileSelector({
                   <button
                     type="button"
                     aria-label="Más opciones"
-                    onClick={() =>
-                      setMenuFor((prev) => (prev === profile.id ? null : profile.id))
-                    }
+                    onClick={(e) => toggleMenu(profile.id, e.currentTarget)}
                     className="w-6 h-6 flex items-center justify-center rounded-md text-muted hover:text-ink hover:bg-white/5 transition-colors"
                   >
                     <MoreVerticalIcon className="w-4 h-4" />
                   </button>
-
-                  {menuFor === profile.id && (
-                    <div className="absolute right-0 top-7 z-30 w-44 bg-surface border border-line rounded-[10px] shadow-xl overflow-hidden py-1">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          onEdit(profile);
-                          setMenuFor(null);
-                          setOpen(false);
-                        }}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-[13px] text-ink hover:bg-white/5 transition-colors"
-                      >
-                        <PencilIcon className="w-3.5 h-3.5" />
-                        Editar
-                      </button>
-                      {!isDefault && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            onSetDefault(profile);
-                            setMenuFor(null);
-                          }}
-                          className="w-full flex items-center gap-2 px-3 py-2 text-[13px] text-ink hover:bg-white/5 transition-colors"
-                        >
-                          <StarIcon className="w-3.5 h-3.5" />
-                          Establecer predeterminado
-                        </button>
-                      )}
-                      {!profile.isPredefined && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            onDelete(profile);
-                            setMenuFor(null);
-                            setOpen(false);
-                          }}
-                          className="w-full flex items-center gap-2 px-3 py-2 text-[13px] text-focus hover:bg-white/5 transition-colors"
-                        >
-                          <TrashIcon className="w-3.5 h-3.5" />
-                          Eliminar
-                        </button>
-                      )}
-                    </div>
-                  )}
                 </div>
               </div>
             );
           })}
         </div>
       )}
+
+      {menu &&
+        typeof document !== "undefined" &&
+        createPortal(
+          (() => {
+            const profile = profiles.find((p) => p.id === menu.id);
+            if (!profile) return null;
+            const isDefault = profile.id === defaultProfileId;
+
+            return (
+              <div
+                ref={menuRef}
+                style={{ position: "fixed", top: menu.top, left: menu.left, width: 176 }}
+                className="z-[70] bg-surface border border-line rounded-[10px] shadow-xl overflow-hidden py-1"
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    onEdit(profile);
+                    setMenu(null);
+                    setOpen(false);
+                  }}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-[13px] text-ink hover:bg-white/5 transition-colors"
+                >
+                  <PencilIcon className="w-3.5 h-3.5" />
+                  Editar
+                </button>
+                {!isDefault && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSetDefault(profile);
+                      setMenu(null);
+                    }}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-[13px] text-ink hover:bg-white/5 transition-colors"
+                  >
+                    <StarIcon className="w-3.5 h-3.5" />
+                    Establecer predeterminado
+                  </button>
+                )}
+                {!profile.isPredefined && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onDelete(profile);
+                      setMenu(null);
+                      setOpen(false);
+                    }}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-[13px] text-focus hover:bg-white/5 transition-colors"
+                  >
+                    <TrashIcon className="w-3.5 h-3.5" />
+                    Eliminar
+                  </button>
+                )}
+              </div>
+            );
+          })(),
+          document.body,
+        )}
     </div>
   );
 }
