@@ -5,10 +5,12 @@
 ### Fixed
 
 - **El modal de perfil se cerraba al hacer click fuera de la ventana**: se quitó el cierre por click en el overlay (que además se rompía al seleccionar texto y soltar el mouse afuera). Ahora el modal de Crear/Editar perfil solo se cierra explícitamente con el botón Cancel, el botón X o la tecla Escape.
+- **El sheet de Settings se cerraba al hacer click afuera mientras el modal de Crear/Editar perfil quedaba abierto encima**: al igual que en `ProfileModal`, se quitó el cierre por click en el overlay de `SettingsSheet`. Ahora solo se cierra con el botón X.
 
 ### Docs
 
 - **Traducción al inglés del modal de Crear/Editar perfil**: los textos visibles (labels, botones, mensajes de validación) del modal `ProfileModal` estaban en español mientras el resto de la interfaz ya estaba en inglés; se tradujeron para mantener consistencia.
+- Se tradujo el botón **"Crear perfil"** de `SettingsSheet` a **"Create profile"**, texto que había quedado en español.
 
 ## 2026-08-03
 

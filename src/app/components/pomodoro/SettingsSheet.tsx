@@ -136,12 +136,10 @@ export default function SettingsSheet({
   return (
     <div
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 p-0 sm:p-4"
-      onClick={onClose}
       role="presentation"
     >
       <div
         className="w-full sm:max-w-md bg-surface border border-line rounded-t-2xl sm:rounded-2xl p-5 max-h-[90vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-label="Settings"
@@ -239,7 +237,7 @@ export default function SettingsSheet({
           className="w-full flex items-center justify-center gap-1.5 text-xs text-muted hover:text-ink py-2 mb-4 rounded-[10px] border border-dashed border-white/[0.14] hover:border-white/30 transition-colors disabled:opacity-50 disabled:pointer-events-none"
         >
           <PlusIcon className="w-3.5 h-3.5" />
-          Crear perfil
+          Create profile
         </button>
 
         <div className="border-t border-line-soft">
