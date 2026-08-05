@@ -13,6 +13,7 @@
 
 - **Traducción al inglés del modal de Crear/Editar perfil**: los textos visibles (labels, botones, mensajes de validación) del modal `ProfileModal` estaban en español mientras el resto de la interfaz ya estaba en inglés; se tradujeron para mantener consistencia.
 - Se tradujo el botón **"Crear perfil"** de `SettingsSheet` a **"Create profile"**, texto que había quedado en español.
+- **Traducción del resto de los textos en español**: el menú de acciones de `ProfileSelector` ("Editar", "Establecer predeterminado", "Eliminar", "Más opciones"), el `ConfirmModal` de borrado de perfil invocado desde `SettingsSheet` (título, mensaje y botones) y los toasts de creación/edición/eliminación/predeterminado de `SettingsSheet`.
 
 ## 2026-08-03
 

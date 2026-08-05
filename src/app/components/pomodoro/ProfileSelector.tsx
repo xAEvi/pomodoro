@@ -198,7 +198,7 @@ export default function ProfileSelector({
                 <div className="relative shrink-0">
                   <button
                     type="button"
-                    aria-label="Más opciones"
+                    aria-label="More options"
                     onClick={(e) => toggleMenu(profile.id, e.currentTarget)}
                     className="w-6 h-6 flex items-center justify-center rounded-md text-muted hover:text-ink hover:bg-white/5 transition-colors"
                   >
@@ -235,7 +235,7 @@ export default function ProfileSelector({
                   className="w-full flex items-center gap-2 px-3 py-2 text-[13px] text-ink hover:bg-white/5 transition-colors"
                 >
                   <PencilIcon className="w-3.5 h-3.5" />
-                  Editar
+                  Edit
                 </button>
                 {!isDefault && (
                   <button
@@ -247,7 +247,7 @@ export default function ProfileSelector({
                     className="w-full flex items-center gap-2 px-3 py-2 text-[13px] text-ink hover:bg-white/5 transition-colors"
                   >
                     <StarIcon className="w-3.5 h-3.5" />
-                    Establecer predeterminado
+                    Set as default
                   </button>
                 )}
                 {!profile.isPredefined && (
@@ -261,7 +261,7 @@ export default function ProfileSelector({
                     className="w-full flex items-center gap-2 px-3 py-2 text-[13px] text-focus hover:bg-white/5 transition-colors"
                   >
                     <TrashIcon className="w-3.5 h-3.5" />
-                    Eliminar
+                    Delete
                   </button>
                 )}
               </div>

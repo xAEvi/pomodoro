@@ -112,11 +112,11 @@ export default function SettingsSheet({
       ) {
         applyProfile({ ...modalProfile, ...data });
       }
-      setToastMessage(`Perfil "${data.name}" actualizado`);
+      setToastMessage(`Profile "${data.name}" updated`);
     } else {
       const created = addProfile(data);
       applyProfile(created);
-      setToastMessage(`Perfil "${data.name}" creado`);
+      setToastMessage(`Profile "${data.name}" created`);
     }
     setModalProfile(undefined);
   };
@@ -125,7 +125,7 @@ export default function SettingsSheet({
     if (!deleteTarget) return;
     const wasActive = activeProfile?.id === deleteTarget.id;
     deleteProfile(deleteTarget.id);
-    setToastMessage(`Perfil "${deleteTarget.name}" eliminado`);
+    setToastMessage(`Profile "${deleteTarget.name}" deleted`);
     setDeleteTarget(null);
     if (wasActive) {
       const fallback = profiles.find((p) => p.id !== deleteTarget.id);
@@ -165,7 +165,7 @@ export default function SettingsSheet({
             onEdit={(profile) => setModalProfile(profile)}
             onSetDefault={(profile) => {
               setAsDefault(profile.id);
-              setToastMessage(`"${profile.name}" es ahora el perfil predeterminado`);
+              setToastMessage(`"${profile.name}" is now the default profile`);
             }}
             onDelete={(profile) => setDeleteTarget(profile)}
             onReorder={reorderProfiles}
@@ -309,9 +309,9 @@ export default function SettingsSheet({
 
       <ConfirmModal
         open={deleteTarget !== null}
-        title="¿Deseas eliminar este perfil?"
-        message={`¿Deseas eliminar "${deleteTarget?.name}"? Esta acción no se puede deshacer`}
-        confirmLabel="Eliminar"
+        title="Delete this profile?"
+        message={`Are you sure you want to delete "${deleteTarget?.name}"? This action cannot be undone.`}
+        confirmLabel="Delete"
         danger
         onConfirm={handleConfirmDelete}
         onCancel={() => setDeleteTarget(null)}
