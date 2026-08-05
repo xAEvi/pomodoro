@@ -4,6 +4,8 @@
 
 ### Fixed
 
+- **Error de hidratación (`Hydration failed`) al cargar la app**: `usePomodoro` y `useProfiles` leían `localStorage` de forma síncrona al cargar el módulo (antes de renderizar), así que el primer render en el cliente ya usaba el estado guardado (modo activo, perfiles, etc.) mientras el HTML generado en el servidor usaba los valores por defecto, produciendo un mismatch. Ahora ambos hooks inicializan su estado con los valores por defecto (coincidiendo con el HTML del servidor) y aplican el estado persistido recién en un `useEffect` tras montar en el cliente, sin tocar `localStorage` durante el render. El efecto de guardado espera a que esa hidratación termine para no sobrescribir los datos guardados con los valores por defecto.
+
 - **El modal de perfil se cerraba al hacer click fuera de la ventana**: se quitó el cierre por click en el overlay (que además se rompía al seleccionar texto y soltar el mouse afuera). Ahora el modal de Crear/Editar perfil solo se cierra explícitamente con el botón Cancel, el botón X o la tecla Escape.
 - **El sheet de Settings se cerraba al hacer click afuera mientras el modal de Crear/Editar perfil quedaba abierto encima**: al igual que en `ProfileModal`, se quitó el cierre por click en el overlay de `SettingsSheet`. Ahora solo se cierra con el botón X.
 

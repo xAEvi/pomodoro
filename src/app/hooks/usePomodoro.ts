@@ -10,101 +10,127 @@ interface UsePomodoroProps {
   onTick?: () => void;
 }
 
-// Se calcula una sola vez al cargar el módulo, antes de que se inicialicen los estados.
-const persisted = loadState();
-
-// Si había una sesión corriendo y su tiempo ya expiró mientras la pestaña estaba cerrada,
-// no queremos reanudarla como si siguiera activa.
-const restoredEndTime =
-  persisted?.isRunning && persisted.endTime && persisted.endTime > Date.now()
-    ? persisted.endTime
-    : null;
-const restoredWasRunning = persisted?.isRunning && restoredEndTime !== null;
-
-// Valor "banked" de una fase: el que tenía guardado la última vez que se
-// persistió el estado, sin importar si esa fase estaba corriendo o no. Esto
-// es lo que le permite a la fase inactiva (ej. break mientras corre focus en
-// modo Flex) sobrevivir a un refresh en vez de reiniciarse a su duración completa.
-function restoredBankedTimeLeft(phase: PomodoroPhase, fallback: number): number {
-  const persistedValue =
-    phase === "focus" ? persisted?.timeLeftFocus : persisted?.timeLeftBreak;
-  return persistedValue ?? fallback;
-}
-
-function restoredTimeLeft(phase: PomodoroPhase, fallback: number): number {
-  const banked = restoredBankedTimeLeft(phase, fallback);
-
-  if (
-    !restoredWasRunning ||
-    !restoredEndTime ||
-    persisted?.currentPhase !== phase
-  ) {
-    return banked;
-  }
-  return Math.max(0, Math.ceil((restoredEndTime - Date.now()) / 1000));
-}
+const DEFAULT_FOCUS_TIME = 25;
+const DEFAULT_BREAK_TIME = 5;
+const DEFAULT_SESSIONS = 4;
 
 export function usePomodoro({
   onPhaseComplete,
   onTick,
 }: UsePomodoroProps = {}) {
-  // Configuración de tiempos (en minutos)
-  const [focusTime, setFocusTime] = useState(persisted?.focusTime ?? 25);
-  const [breakTime, setBreakTime] = useState(persisted?.breakTime ?? 5);
-  const [sessions, setSessions] = useState(persisted?.sessions ?? 4);
+  // Configuración de tiempos (en minutos). Se inicializan con los valores por
+  // defecto (sin tocar localStorage) para que el primer render del cliente
+  // coincida con el HTML del servidor; el estado persistido se aplica luego
+  // en un efecto (ver más abajo), una vez montado en el navegador.
+  const [focusTime, setFocusTime] = useState(DEFAULT_FOCUS_TIME);
+  const [breakTime, setBreakTime] = useState(DEFAULT_BREAK_TIME);
+  const [sessions, setSessions] = useState(DEFAULT_SESSIONS);
 
   // Control de ejecución
-  const [activeMode, setActiveMode] = useState<PomodoroMode>(
-    persisted?.activeMode ?? "classic",
-  );
-  const [currentPhase, setCurrentPhase] = useState<PomodoroPhase>(
-    persisted?.currentPhase ?? "focus",
-  );
-  const [isRunning, setIsRunning] = useState(restoredWasRunning ?? false);
-  const [currentSession, setCurrentSession] = useState(
-    persisted?.currentSession ?? 1,
-  );
-  const [autoStart, setAutoStart] = useState(persisted?.autoStart ?? false);
-  const [ambientSoundEnabled, setAmbientSoundEnabled] = useState(
-    persisted?.ambientSoundEnabled ?? false,
-  );
-  const [ambientSoundType, setAmbientSoundType] = useState<AmbientSoundType>(
-    persisted?.ambientSoundType ?? "rain",
-  );
-  const [notificationsEnabled, setNotificationsEnabled] = useState(
-    persisted?.notificationsEnabled ?? true,
-  );
+  const [activeMode, setActiveMode] = useState<PomodoroMode>("classic");
+  const [currentPhase, setCurrentPhase] = useState<PomodoroPhase>("focus");
+  const [isRunning, setIsRunning] = useState(false);
+  const [currentSession, setCurrentSession] = useState(1);
+  const [autoStart, setAutoStart] = useState(false);
+  const [ambientSoundEnabled, setAmbientSoundEnabled] = useState(false);
+  const [ambientSoundType, setAmbientSoundType] =
+    useState<AmbientSoundType>("rain");
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 
   // Estados del temporizador (en segundos)
-  const multiplierInit = activeMode === "flex" ? sessions : 1;
   const [timeLeftFocus, setTimeLeftFocus] = useState(
-    restoredTimeLeft("focus", focusTime * 60 * multiplierInit),
+    DEFAULT_FOCUS_TIME * 60,
   );
-  const [timeLeftBreak, setTimeLeftBreak] = useState(
-    restoredTimeLeft("break", breakTime * 60 * multiplierInit),
-  );
+  const [timeLeftBreak, setTimeLeftBreak] = useState(DEFAULT_BREAK_TIME * 60);
 
   // Referencias para el loop de alta precisión
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const endTimeRef = useRef<number | null>(restoredEndTime);
+  const endTimeRef = useRef<number | null>(null);
 
   // Espejo en estado de endTimeRef, solo para exponerlo a la UI (ej. "ends
   // 14:26"). Se actualiza desde syncTimeLeft/las acciones de usuario, nunca
   // directamente en el cuerpo de un efecto.
-  const [endTime, setEndTime] = useState<number | null>(
-    restoredWasRunning ? restoredEndTime : null,
-  );
+  const [endTime, setEndTime] = useState<number | null>(null);
 
   // Referencia para saber si el cronómetro ha sido alterado o iniciado. También
   // se considera "dirty" si alguna de las fases tenía un tiempo banked distinto
   // al de una sesión recién iniciada, para no perder ese progreso al montar
   // (ver los efectos de sincronización de inputs más abajo).
-  const isDirtyRef = useRef(
-    restoredWasRunning ||
-      (persisted?.currentSession ?? 1) > 1 ||
-      timeLeftFocus !== focusTime * 60 * multiplierInit ||
-      timeLeftBreak !== breakTime * 60 * multiplierInit,
-  );
+  const isDirtyRef = useRef(false);
+
+  // Bloquea el efecto de persistencia hasta que el estado guardado (si lo
+  // hay) se haya aplicado, para no pisar localStorage con los valores por
+  // defecto antes de leerlo.
+  const [hydrated, setHydrated] = useState(false);
+
+  // Aplicamos el estado persistido en localStorage recién al montar en el
+  // cliente, nunca durante el render inicial: leerlo de forma síncrona ahí
+  // producía un mismatch de hidratación (SSR no tiene acceso a localStorage).
+  useEffect(() => {
+    const persisted = loadState();
+
+    if (!persisted) {
+      setHydrated(true);
+      return;
+    }
+
+    // Si había una sesión corriendo y su tiempo ya expiró mientras la pestaña
+    // estaba cerrada, no queremos reanudarla como si siguiera activa.
+    const restoredEndTime =
+      persisted.isRunning && persisted.endTime && persisted.endTime > Date.now()
+        ? persisted.endTime
+        : null;
+    const restoredWasRunning = Boolean(
+      persisted.isRunning && restoredEndTime !== null,
+    );
+
+    const nextFocusTime = persisted.focusTime ?? DEFAULT_FOCUS_TIME;
+    const nextBreakTime = persisted.breakTime ?? DEFAULT_BREAK_TIME;
+    const nextSessions = persisted.sessions ?? DEFAULT_SESSIONS;
+    const nextActiveMode = persisted.activeMode ?? "classic";
+    const nextCurrentPhase = persisted.currentPhase ?? "focus";
+    const multiplier = nextActiveMode === "flex" ? nextSessions : 1;
+
+    // Valor "banked" de cada fase: el que tenía guardado la última vez que se
+    // persistió el estado, sin importar si esa fase estaba corriendo o no.
+    // Esto es lo que le permite a la fase inactiva (ej. break mientras corre
+    // focus en modo Flex) sobrevivir a un refresh en vez de reiniciarse.
+    const bankedFocus = persisted.timeLeftFocus ?? nextFocusTime * 60 * multiplier;
+    const bankedBreak = persisted.timeLeftBreak ?? nextBreakTime * 60 * multiplier;
+
+    const nextTimeLeftFocus =
+      restoredWasRunning && restoredEndTime && nextCurrentPhase === "focus"
+        ? Math.max(0, Math.ceil((restoredEndTime - Date.now()) / 1000))
+        : bankedFocus;
+    const nextTimeLeftBreak =
+      restoredWasRunning && restoredEndTime && nextCurrentPhase === "break"
+        ? Math.max(0, Math.ceil((restoredEndTime - Date.now()) / 1000))
+        : bankedBreak;
+
+    setFocusTime(nextFocusTime);
+    setBreakTime(nextBreakTime);
+    setSessions(nextSessions);
+    setActiveMode(nextActiveMode);
+    setCurrentPhase(nextCurrentPhase);
+    setIsRunning(restoredWasRunning);
+    setCurrentSession(persisted.currentSession ?? 1);
+    setAutoStart(persisted.autoStart ?? false);
+    setAmbientSoundEnabled(persisted.ambientSoundEnabled ?? false);
+    setAmbientSoundType(persisted.ambientSoundType ?? "rain");
+    setNotificationsEnabled(persisted.notificationsEnabled ?? true);
+    setTimeLeftFocus(nextTimeLeftFocus);
+    setTimeLeftBreak(nextTimeLeftBreak);
+    endTimeRef.current = restoredEndTime;
+    setEndTime(restoredWasRunning ? restoredEndTime : null);
+    isDirtyRef.current =
+      restoredWasRunning ||
+      (persisted.currentSession ?? 1) > 1 ||
+      nextTimeLeftFocus !== nextFocusTime * 60 * multiplier ||
+      nextTimeLeftBreak !== nextBreakTime * 60 * multiplier;
+
+    setHydrated(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /**
    * Sincronizar cambios de configuración de inputs.
@@ -276,7 +302,11 @@ export function usePomodoro({
   );
 
   // Persistimos configuración y sesión en curso para sobrevivir a un refresh.
+  // Se espera a `hydrated` para no pisar el localStorage con los valores por
+  // defecto antes de haber aplicado el estado ya guardado (ver efecto de arriba).
   useEffect(() => {
+    if (!hydrated) return;
+
     saveState({
       focusTime,
       breakTime,
@@ -308,6 +338,7 @@ export function usePomodoro({
     ambientSoundEnabled,
     ambientSoundType,
     notificationsEnabled,
+    hydrated,
   ]);
 
   return {

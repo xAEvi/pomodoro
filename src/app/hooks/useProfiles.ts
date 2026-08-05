@@ -7,23 +7,36 @@ import {
   saveProfiles,
 } from "../utils/profiles";
 
-// Se calcula una sola vez al cargar el módulo, antes de que se inicialicen los estados.
-const persisted = loadProfiles();
-
 export type ProfileFormData = Omit<PomodoroProfile, "id" | "isPredefined">;
 
 export function useProfiles() {
+  // Se inicializan con los perfiles predefinidos (sin tocar localStorage) para
+  // que el primer render del cliente coincida con el HTML del servidor; el
+  // estado persistido se aplica luego en un efecto, una vez montado en el
+  // navegador. Leerlo de forma síncrona a nivel de módulo producía un
+  // mismatch de hidratación (SSR no tiene acceso a localStorage).
   const [profiles, setProfiles] = useState<PomodoroProfile[]>(
-    persisted.profiles,
+    PREDEFINED_PROFILES,
   );
   const [defaultProfileId, setDefaultProfileId] = useState(
-    persisted.defaultProfileId,
+    PREDEFINED_PROFILES[0].id,
   );
+  const [hydrated, setHydrated] = useState(false);
 
-  // Persistimos perfiles y el predeterminado ante cualquier cambio.
   useEffect(() => {
+    const persisted = loadProfiles();
+    setProfiles(persisted.profiles);
+    setDefaultProfileId(persisted.defaultProfileId);
+    setHydrated(true);
+  }, []);
+
+  // Persistimos perfiles y el predeterminado ante cualquier cambio. Se espera
+  // a `hydrated` para no pisar el localStorage con los predefinidos antes de
+  // haber aplicado el estado ya guardado.
+  useEffect(() => {
+    if (!hydrated) return;
     saveProfiles({ profiles, defaultProfileId });
-  }, [profiles, defaultProfileId]);
+  }, [profiles, defaultProfileId, hydrated]);
 
   const defaultProfile =
     profiles.find((p) => p.id === defaultProfileId) ?? profiles[0];
