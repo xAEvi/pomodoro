@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { PomodoroProfile } from "../../utils/profiles";
 import { formatDurationHM } from "../../utils/time";
 import { CloseIcon } from "./icons";
@@ -12,7 +12,7 @@ const SESSIONS_LIMITS = { min: 1, max: 10 };
 
 interface ProfileModalProps {
   open: boolean;
-  profile: PomodoroProfile | null; // null = crear, definido = editar
+  profile: PomodoroProfile | null; // null = create, defined = edit
   onClose: () => void;
   onSave: (data: ProfileFormData) => void;
 }
@@ -28,6 +28,7 @@ export default function ProfileModal({
   const [breakTime, setBreakTime] = useState(profile?.breakTime ?? 5);
   const [sessions, setSessions] = useState(profile?.sessions ?? 4);
   const [error, setError] = useState<string | null>(null);
+  const overlayMouseDownRef = useRef(false);
 
   useEffect(() => {
     if (!open) return;
@@ -47,19 +48,19 @@ export default function ProfileModal({
   const handleSave = () => {
     const trimmedName = name.trim();
     if (!trimmedName) {
-      setError("El nombre del perfil es obligatorio.");
+      setError("Profile name is required.");
       return;
     }
     if (focusTime < FOCUS_LIMITS.min || focusTime > FOCUS_LIMITS.max) {
-      setError(`Focus debe estar entre ${FOCUS_LIMITS.min} y ${FOCUS_LIMITS.max} min.`);
+      setError(`Focus must be between ${FOCUS_LIMITS.min} and ${FOCUS_LIMITS.max} min.`);
       return;
     }
     if (breakTime < BREAK_LIMITS.min || breakTime > BREAK_LIMITS.max) {
-      setError(`Break debe estar entre ${BREAK_LIMITS.min} y ${BREAK_LIMITS.max} min.`);
+      setError(`Break must be between ${BREAK_LIMITS.min} and ${BREAK_LIMITS.max} min.`);
       return;
     }
     if (sessions < SESSIONS_LIMITS.min || sessions > SESSIONS_LIMITS.max) {
-      setError(`Sessions debe estar entre ${SESSIONS_LIMITS.min} y ${SESSIONS_LIMITS.max}.`);
+      setError(`Sessions must be between ${SESSIONS_LIMITS.min} and ${SESSIONS_LIMITS.max}.`);
       return;
     }
 
@@ -69,7 +70,13 @@ export default function ProfileModal({
   return (
     <div
       className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/60 p-0 sm:p-4"
-      onClick={onClose}
+      onMouseDown={(e) => {
+        overlayMouseDownRef.current = e.target === e.currentTarget;
+      }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget && overlayMouseDownRef.current)
+          onClose();
+      }}
       role="presentation"
     >
       <div
@@ -77,15 +84,15 @@ export default function ProfileModal({
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
-        aria-label={profile ? "Editar perfil" : "Crear perfil"}
+        aria-label={profile ? "Edit profile" : "Create profile"}
       >
         <div className="flex items-center justify-between mb-4">
           <span className="text-ink text-sm font-medium">
-            {profile ? "Editar perfil" : "Crear perfil"}
+            {profile ? "Edit profile" : "Create profile"}
           </span>
           <button
             onClick={onClose}
-            aria-label="Cerrar"
+            aria-label="Close"
             className="text-muted hover:text-ink transition-colors"
           >
             <CloseIcon className="w-4 h-4" />
@@ -94,7 +101,7 @@ export default function ProfileModal({
 
         <label className="block mb-4">
           <span className="block text-[11px] text-muted mb-1.5">
-            Nombre del perfil
+            Profile name
           </span>
           <input
             type="text"
@@ -104,7 +111,7 @@ export default function ProfileModal({
             onKeyDown={(e) => {
               if (e.key === "Enter") handleSave();
             }}
-            placeholder="Ej: Programación, Descanso prolongado"
+            placeholder="E.g: Coding, Extended break"
             className="w-full bg-white/[0.04] rounded-[10px] px-3 py-2.5 text-sm text-ink placeholder:text-faint focus:outline-none focus:ring-1 focus:ring-white/20"
           />
         </label>
@@ -164,7 +171,7 @@ export default function ProfileModal({
         </div>
 
         <div className="flex items-center justify-between text-[11px] text-faint mb-5">
-          <span>Duración total estimada</span>
+          <span>Estimated total duration</span>
           <span className="text-ink font-mono">
             {formatDurationHM(totalMinutes)}
           </span>
@@ -182,14 +189,14 @@ export default function ProfileModal({
             onClick={onClose}
             className="text-xs px-3.5 py-2 rounded-full border border-white/[0.14] text-[#C9CFD8] hover:border-white/30 transition-colors"
           >
-            Cancelar
+            Cancel
           </button>
           <button
             type="button"
             onClick={handleSave}
             className="text-xs px-3.5 py-2 rounded-full bg-ink text-[#101318] font-medium hover:bg-ink/90 transition-colors"
           >
-            Guardar
+            Save
           </button>
         </div>
       </div>

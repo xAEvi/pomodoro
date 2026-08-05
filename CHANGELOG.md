@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-08-05
+
+### Fixed
+
+- **El modal de perfil se cerraba al seleccionar texto y soltar el click fuera de la ventana**: el overlay cerraba el modal en cualquier `click`, incluso si el `mousedown` había comenzado dentro del diálogo (por ejemplo, al subrayar el nombre del perfil y arrastrar el mouse fuera de la ventana). Ahora solo se cierra si tanto el `mousedown` como el `click` ocurren directamente sobre el overlay.
+
+### Docs
+
+- **Traducción al inglés del modal de Crear/Editar perfil**: los textos visibles (labels, botones, mensajes de validación) del modal `ProfileModal` estaban en español mientras el resto de la interfaz ya estaba en inglés; se tradujeron para mantener consistencia.
+
 ## 2026-08-03
 
 ### Added
