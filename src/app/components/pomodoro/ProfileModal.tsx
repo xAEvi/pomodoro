@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { PomodoroProfile } from "../../utils/profiles";
 import { formatDurationHM } from "../../utils/time";
 import { CloseIcon } from "./icons";
@@ -28,7 +28,6 @@ export default function ProfileModal({
   const [breakTime, setBreakTime] = useState(profile?.breakTime ?? 5);
   const [sessions, setSessions] = useState(profile?.sessions ?? 4);
   const [error, setError] = useState<string | null>(null);
-  const overlayMouseDownRef = useRef(false);
 
   useEffect(() => {
     if (!open) return;
@@ -70,18 +69,10 @@ export default function ProfileModal({
   return (
     <div
       className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/60 p-0 sm:p-4"
-      onMouseDown={(e) => {
-        overlayMouseDownRef.current = e.target === e.currentTarget;
-      }}
-      onClick={(e) => {
-        if (e.target === e.currentTarget && overlayMouseDownRef.current)
-          onClose();
-      }}
       role="presentation"
     >
       <div
         className="w-full sm:max-w-md bg-surface border border-line rounded-t-2xl sm:rounded-2xl p-5 max-h-[90vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-label={profile ? "Edit profile" : "Create profile"}

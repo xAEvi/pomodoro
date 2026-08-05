@@ -4,7 +4,7 @@
 
 ### Fixed
 
-- **El modal de perfil se cerraba al seleccionar texto y soltar el click fuera de la ventana**: el overlay cerraba el modal en cualquier `click`, incluso si el `mousedown` había comenzado dentro del diálogo (por ejemplo, al subrayar el nombre del perfil y arrastrar el mouse fuera de la ventana). Ahora solo se cierra si tanto el `mousedown` como el `click` ocurren directamente sobre el overlay.
+- **El modal de perfil se cerraba al hacer click fuera de la ventana**: se quitó el cierre por click en el overlay (que además se rompía al seleccionar texto y soltar el mouse afuera). Ahora el modal de Crear/Editar perfil solo se cierra explícitamente con el botón Cancel, el botón X o la tecla Escape.
 
 ### Docs
 
