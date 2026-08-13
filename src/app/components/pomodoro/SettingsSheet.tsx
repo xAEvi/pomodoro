@@ -30,6 +30,9 @@ interface SettingsSheetProps {
   setAmbientSoundType: (value: AmbientSoundType) => void;
   notificationsEnabled: boolean;
   setNotificationsEnabled: (value: boolean) => void;
+  wakeLockEnabled: boolean;
+  setWakeLockEnabled: (value: boolean) => void;
+  isWakeLockSupported: boolean;
   profiles: PomodoroProfile[];
   defaultProfileId: string;
   addProfile: (data: ProfileFormData) => PomodoroProfile;
@@ -71,6 +74,9 @@ export default function SettingsSheet({
   setAmbientSoundType,
   notificationsEnabled,
   setNotificationsEnabled,
+  wakeLockEnabled,
+  setWakeLockEnabled,
+  isWakeLockSupported,
   profiles,
   defaultProfileId,
   addProfile,
@@ -94,6 +100,7 @@ export default function SettingsSheet({
   );
   const totalMinutes = sessions * (focusTime + breakTime);
   const ambientLabel = ambientSoundType === "rain" ? "Rain" : "White noise";
+  const showInstallRow = !isStandalone && (canInstall || isIos);
 
   const applyProfile = (profile: PomodoroProfile) => {
     if (disabled) return;
@@ -289,7 +296,7 @@ export default function SettingsSheet({
             type="button"
             onClick={() => setNotificationsEnabled(!notificationsEnabled)}
             className={`w-full flex items-center justify-between py-3 ${
-              !isStandalone && (canInstall || isIos) ? "border-b border-line-soft" : ""
+              isWakeLockSupported || showInstallRow ? "border-b border-line-soft" : ""
             }`}
           >
             <span className="text-left">
@@ -301,7 +308,25 @@ export default function SettingsSheet({
             <Switch on={notificationsEnabled} />
           </button>
 
-          {!isStandalone && (canInstall || isIos) && (
+          {isWakeLockSupported && (
+            <button
+              type="button"
+              onClick={() => setWakeLockEnabled(!wakeLockEnabled)}
+              className={`w-full flex items-center justify-between py-3 ${
+                showInstallRow ? "border-b border-line-soft" : ""
+              }`}
+            >
+              <span className="text-left">
+                <span className="block text-[13px] text-ink">Keep screen awake</span>
+                <span className="block text-[11px] text-faint">
+                  Prevents sleep while the timer runs
+                </span>
+              </span>
+              <Switch on={wakeLockEnabled} />
+            </button>
+          )}
+
+          {showInstallRow && (
             <div className="w-full flex items-center justify-between gap-3 py-3">
               <span className="text-left">
                 <span className="block text-[13px] text-ink">Install app</span>

@@ -22,6 +22,8 @@ In Flexible Mode, the total time is calculated by multiplying the focus and rest
 - Browser notifications (toggle in settings) and a distinct alert sound when a phase ends, even if the tab isn't active.
 - Optional ambient sound during focus (rain / white noise) — toggle from the header speaker icon or from settings.
 - "Always-on-top" mode: pop the timer into a floating Picture-in-Picture window that stays visible over other apps.
+- **Installable as an app (PWA)**: install it to your home screen or desktop from the "Install app" row in settings and it runs in its own window, offline included. On iOS Safari the row shows the manual "Add to Home Screen" steps instead, since it has no install prompt API.
+- **Keep screen awake** (optional, in settings): holds a screen wake lock while the timer runs so the display doesn't sleep mid-session. Off by default, and hidden on browsers without support.
 - Keyboard shortcuts: `Space` to play/pause, `R` to reset, `T` to switch phase in Flex mode (shown in a footer hint).
 - Click sounds on buttons for interface feedback.
 - Modern dark-themed interface with smooth transitions and no layout jump when switching between Classic and Flex.

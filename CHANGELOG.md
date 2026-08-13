@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-08-13
+
+### Added
+
+- **La aplicación es instalable (PWA)**: se agregaron un manifest (`src/app/manifest.ts`), íconos generados con `next/og` (incluida una variante maskable para Android y un apple-touch-icon) y un service worker (`public/sw.js`) que cachea el app shell, de modo que el timer funciona sin conexión y puede instalarse en la pantalla de inicio o el escritorio. El service worker usa network-first para el HTML (para no servir una versión vieja habiendo red) y cache-first para los assets, que ya llevan hash en el nombre. Solo se registra en producción.
+- **Opción "Install app" en Settings**: dispara el prompt nativo de instalación en Android/Chrome (vía `beforeinstallprompt`) y muestra las instrucciones manuales (Compartir → "Add to Home Screen") en iOS Safari, que no expone esa API. La fila se oculta cuando la app ya corre instalada. Importante: Chrome solo ofrece la instalación sobre HTTPS o `localhost`, nunca sobre `http://` por IP de red local, así que la opción no aparece al probar contra el servidor de desarrollo desde el celular.
+- **Opción "Keep screen awake" en Settings**: mantiene la pantalla encendida mientras el timer corre (tanto en focus como en break) usando la Screen Wake Lock API, para poder dejar el dispositivo a la vista sin que se apague. Viene desactivada por defecto por su impacto en la batería y se persiste en `localStorage` junto al resto del estado. La fila se oculta en navegadores sin soporte. El sistema libera el lock cada vez que el documento deja de estar visible, así que `useWakeLock` lo vuelve a pedir al regresar a la app; sin eso, solo habría funcionado hasta la primera vez que el usuario cambia de pestaña.
+
 ## 2026-08-05
 
 ### Fixed

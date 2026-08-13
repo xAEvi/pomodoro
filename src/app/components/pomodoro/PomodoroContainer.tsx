@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { usePomodoro, PomodoroPhase } from "../../hooks/usePomodoro";
 import { usePictureInPicture } from "../../hooks/usePictureInPicture";
+import { useWakeLock } from "../../hooks/useWakeLock";
 import { useProfiles } from "../../hooks/useProfiles";
 import { formatTime, formatDurationHM, formatClockTime } from "../../utils/time";
 import {
@@ -74,6 +75,8 @@ export default function PomodoroContainer() {
     setAmbientSoundType,
     notificationsEnabled,
     setNotificationsEnabled,
+    wakeLockEnabled,
+    setWakeLockEnabled,
     startTimer,
     pauseTimer,
     resetTimer,
@@ -82,6 +85,12 @@ export default function PomodoroContainer() {
   } = usePomodoro({
     onPhaseComplete: handlePhaseComplete,
   });
+
+  // Mantiene la pantalla encendida durante todo el ciclo (foco y descanso)
+  // mientras el timer corra, si el usuario habilitó la opción.
+  const { isSupported: isWakeLockSupported } = useWakeLock(
+    wakeLockEnabled && isRunning,
+  );
 
   useEffect(() => {
     notificationsEnabledRef.current = notificationsEnabled;
@@ -414,6 +423,9 @@ export default function PomodoroContainer() {
         setAmbientSoundType={setAmbientSoundType}
         notificationsEnabled={notificationsEnabled}
         setNotificationsEnabled={setNotificationsEnabled}
+        wakeLockEnabled={wakeLockEnabled}
+        setWakeLockEnabled={setWakeLockEnabled}
+        isWakeLockSupported={isWakeLockSupported}
         profiles={profiles}
         defaultProfileId={defaultProfileId}
         addProfile={addProfile}
