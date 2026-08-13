@@ -42,9 +42,16 @@ export function usePictureInPicture() {
     if (!isSupported || !window.documentPictureInPicture) return;
 
     const pip = await window.documentPictureInPicture.requestWindow({
-      width: 260,
-      height: 160,
+      width: 240,
+      height: 132,
     });
+
+    // El user agent aplica un margin por defecto al <body> del documento
+    // PiP, lo que provoca scrollbars visibles cuando la ventana es chica.
+    pip.document.documentElement.style.height = "100%";
+    pip.document.body.style.margin = "0";
+    pip.document.body.style.height = "100%";
+    pip.document.body.style.overflow = "hidden";
 
     // Copiamos los estilos de la página principal para que el timer
     // flotante se vea igual dentro de la ventana Picture-in-Picture.

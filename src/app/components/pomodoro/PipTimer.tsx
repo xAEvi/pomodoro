@@ -2,6 +2,7 @@
 
 import React from "react";
 import { PomodoroMode } from "../../hooks/usePomodoro";
+import { usePipSize } from "../../hooks/usePipSize";
 import { PlayIcon, PauseIcon, ArrowsExchangeIcon } from "./icons";
 
 interface PipTimerProps {
@@ -13,9 +14,15 @@ interface PipTimerProps {
   progress: number; // 0..1, fracción de tiempo transcurrido de la fase activa
   onStartPause: () => void;
   onTogglePhase: () => void;
+  pipWindow: Window | null;
 }
 
-export default function PipTimer({
+export default function PipTimer(props: PipTimerProps) {
+  const { isCompact } = usePipSize(props.pipWindow);
+  return isCompact ? <PipTimerCompact {...props} /> : <PipTimerFull {...props} />;
+}
+
+function PipTimerFull({
   phaseLabel,
   timeLabel,
   colorKey,
@@ -78,6 +85,66 @@ export default function PipTimer({
             Switch
           </button>
         )}
+      </div>
+    </div>
+  );
+}
+
+function PipTimerCompact({
+  timeLabel,
+  colorKey,
+  isRunning,
+  activeMode,
+  progress,
+  onStartPause,
+  onTogglePhase,
+}: PipTimerProps) {
+  const bgFill = colorKey === "focus" ? "bg-focus-wash" : "bg-break-wash";
+  const clampedProgress = Math.min(1, Math.max(0, progress));
+  const progressPercent = Math.round(clampedProgress * 100);
+  const isFlex = activeMode === "flex";
+  const fill = (
+    <div
+      className={`absolute inset-y-0 left-0 transition-[width] duration-500 ease-linear transition-colors duration-700 ${bgFill}`}
+      style={{ width: `${progressPercent}%` }}
+    />
+  );
+
+  return (
+    <div className="relative h-screen w-screen overflow-hidden bg-canvas">
+      {isFlex ? (
+        <button
+          type="button"
+          onClick={onTogglePhase}
+          aria-label="Switch phase"
+          title="Switch phase"
+          className="absolute inset-0 w-full h-full active:brightness-110"
+        >
+          {fill}
+        </button>
+      ) : (
+        <div className="absolute inset-0 w-full h-full">{fill}</div>
+      )}
+
+      <div className="absolute inset-0 flex items-center justify-between px-2 gap-2 pointer-events-none">
+        <span className="text-[clamp(14px,7vh,22px)] font-mono text-ink tabular-nums tracking-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]">
+          {timeLabel}
+        </span>
+        <button
+          onClick={(event) => {
+            event.stopPropagation();
+            onStartPause();
+          }}
+          aria-label={isRunning ? "Pause" : "Start"}
+          title={isRunning ? "Pause" : "Start"}
+          className="pointer-events-auto w-7 h-7 shrink-0 rounded-full bg-ink text-[#101318] flex items-center justify-center"
+        >
+          {isRunning ? (
+            <PauseIcon className="w-3.5 h-3.5" />
+          ) : (
+            <PlayIcon className="w-3.5 h-3.5" />
+          )}
+        </button>
       </div>
     </div>
   );

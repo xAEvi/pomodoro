@@ -434,6 +434,7 @@ export default function PomodoroContainer() {
             progress={progress}
             onStartPause={isRunning ? pauseTimer : startTimer}
             onTogglePhase={togglePhase}
+            pipWindow={pipWindow}
           />,
           pipWindow.document.body
         )}
