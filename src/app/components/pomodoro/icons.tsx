@@ -183,3 +183,13 @@ export function PlusIcon(props: IconProps) {
     </Icon>
   );
 }
+
+export function DownloadIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M12 3v12" />
+      <polyline points="7 10 12 15 17 10" />
+      <path d="M4 19h16" />
+    </Icon>
+  );
+}

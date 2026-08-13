@@ -5,7 +5,8 @@ import { AmbientSoundType } from "../../utils/audio";
 import { formatDurationHM } from "../../utils/time";
 import { PomodoroProfile } from "../../utils/profiles";
 import { ProfileFormData } from "../../hooks/useProfiles";
-import { CloseIcon, PlusIcon } from "./icons";
+import { useInstallPrompt } from "../../hooks/useInstallPrompt";
+import { CloseIcon, DownloadIcon, PlusIcon } from "./icons";
 import ProfileSelector from "./ProfileSelector";
 import ProfileModal from "./ProfileModal";
 import ConfirmModal from "./ConfirmModal";
@@ -83,6 +84,7 @@ export default function SettingsSheet({
   ); // undefined = cerrado, null = crear, perfil = editar
   const [deleteTarget, setDeleteTarget] = useState<PomodoroProfile | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const { canInstall, isStandalone, isIos, promptInstall } = useInstallPrompt();
 
   if (!open) return null;
 
@@ -286,7 +288,9 @@ export default function SettingsSheet({
           <button
             type="button"
             onClick={() => setNotificationsEnabled(!notificationsEnabled)}
-            className="w-full flex items-center justify-between py-3"
+            className={`w-full flex items-center justify-between py-3 ${
+              !isStandalone && (canInstall || isIos) ? "border-b border-line-soft" : ""
+            }`}
           >
             <span className="text-left">
               <span className="block text-[13px] text-ink">Notifications</span>
@@ -296,6 +300,29 @@ export default function SettingsSheet({
             </span>
             <Switch on={notificationsEnabled} />
           </button>
+
+          {!isStandalone && (canInstall || isIos) && (
+            <div className="w-full flex items-center justify-between gap-3 py-3">
+              <span className="text-left">
+                <span className="block text-[13px] text-ink">Install app</span>
+                <span className="block text-[11px] text-faint">
+                  {isIos
+                    ? 'Tap the Share icon, then "Add to Home Screen"'
+                    : "Run Pomodoro offline from your home screen"}
+                </span>
+              </span>
+              {canInstall && (
+                <button
+                  type="button"
+                  onClick={promptInstall}
+                  className="flex items-center gap-1.5 text-xs text-ink bg-white/[0.08] hover:bg-white/[0.14] px-3 py-1.5 rounded-full transition-colors shrink-0"
+                >
+                  <DownloadIcon className="w-3.5 h-3.5" />
+                  Install
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
