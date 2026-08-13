@@ -19,7 +19,6 @@ export interface PersistedPomodoroState {
   ambientSoundType: AmbientSoundType;
   notificationsEnabled: boolean;
   wakeLockEnabled: boolean;
-  mediaSessionEnabled: boolean;
 }
 
 export function loadState(): Partial<PersistedPomodoroState> | null {

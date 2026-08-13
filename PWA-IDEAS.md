@@ -12,7 +12,6 @@ Ordenado por relación impacto/esfuerzo, con notas honestas de soporte por naveg
 - `src/app/hooks/useWakeLock.ts` + toggle "Keep screen awake" en `SettingsSheet` (idea 1).
 - `shortcuts` en `manifest.ts` + lógica de aplicación en `PomodoroContainer` (idea 2).
 - `src/app/hooks/useServiceWorkerUpdate.ts` + `UpdateBanner` (idea 5).
-- `src/app/hooks/useMediaSession.ts` + toggle "Lock screen controls" en `SettingsSheet` (idea 7).
 
 **Ventaja estructural que ya tienes:** `usePomodoro` calcula el tiempo restante contra
 `endTimeRef` (un timestamp absoluto), no acumulando ticks. Por eso el timer sobrevive al
@@ -24,13 +23,13 @@ throttling de pestañas en background y a un refresh. Varias ideas de abajo depe
 
 | # | Idea | Impacto | Esfuerzo | Soporte |
 |---|------|---------|----------|---------|
-| 1 | ✅ Screen Wake Lock | Alto | Bajo | Amplio |
-| 2 | ✅ Atajos en el manifest | Alto | Bajo | Chromium, Safari parcial |
+| 1 | Screen Wake Lock | Alto | Bajo | Amplio |
+| 2 | Atajos en el manifest | Alto | Bajo | Chromium, Safari parcial |
 | 3 | Badge en el ícono | Medio | Bajo | Chromium, Safari macOS |
 | 4 | Almacenamiento persistente | Medio | Muy bajo | Chromium, Firefox |
-| 5 | ✅ Aviso de nueva versión | Medio | Bajo | Amplio |
+| 5 | Aviso de nueva versión | Medio | Bajo | Amplio |
 | 6 | `launch_handler: focus-existing` | Medio | Muy bajo | Chromium |
-| 7 | ✅ Media Session (controles en pantalla bloqueada) | Alto | Medio | Amplio (con truco) |
+| 7 | Media Session (controles en pantalla bloqueada) | Alto | Medio | Amplio (con truco) |
 | 8 | Vibración al terminar fase | Medio | Muy bajo | Android; **no** iOS |
 | 9 | Historial y estadísticas (IndexedDB) | Alto | Medio-alto | Amplio |
 | 10 | Exportar/importar perfiles | Medio | Medio | Con fallback: amplio |
@@ -214,43 +213,31 @@ hay una sesión corriendo en otra ventana".
 
 ## Nivel 2 — Alto impacto, esfuerzo medio
 
-### ✅ 7. Media Session — controlar el timer desde la pantalla bloqueada
+### 7. Media Session — controlar el timer desde la pantalla bloqueada
 
-**Implementado.** `src/app/hooks/useMediaSession.ts` + toggle "Lock screen controls" en
-`SettingsSheet` (apagado por defecto). El SO solo muestra estos controles si hay un
-elemento de audio real reproduciendo — el sonido ambiental (`utils/audio.ts`) usa Web
-Audio API pura, que no cuenta por sí sola. En vez de atarlo al ambiental (que viene
-apagado por defecto y se pausa en break), se optó por un `AudioContext` propio con un
-loop de silencio digital enrutado a un `<audio>` oculto vía `MediaStream` — así los
-controles funcionan también en pausa y en break, no solo cuando el ambiental está sonando.
+Que aparezca el Pomodoro en los controles de medios del sistema (pantalla bloqueada,
+notificación persistente en Android, auriculares Bluetooth).
 
-Reutiliza `isRunning`/`currentPhase`/`timeLeft`/`currentSession`/`sessions` ya calculados
-en `PomodoroContainer` para el título (`"MM:SS - Focus"`), álbum (`"Session X of Y"`) y
-artwork (`/icon-512.png`, ya servido). Action handlers: `play`/`pause`/`stop` (este último
-mapea a terminar la sesión, no estaba en el sketch original).
+```ts
+navigator.mediaSession.metadata = new MediaMetadata({
+  title: `${formatTime(timeLeft)} — ${phaseLabelCap}`,
+  artist: "Pomodoro",
+  artwork: [{ src: "/icon-512.png", sizes: "512x512", type: "image/png" }],
+});
+navigator.mediaSession.setActionHandler("play", startTimer);
+navigator.mediaSession.setActionHandler("pause", pauseTimer);
+```
 
-**Dos bugs reales encontrados y corregidos durante la implementación (no de test, del
-comportamiento real):**
+**Gotcha importante y no obvio:** el sistema operativo normalmente solo muestra estos
+controles si hay un elemento de medios real reproduciendo. Tu audio ambiental usa Web
+Audio API pura (`utils/audio.ts`), que no cuenta. Dos salidas:
 
-1. **Race en el primer tick**: si el usuario pausaba dentro de los ~200ms posteriores a
-   Start (antes de que el intervalo tickeara una vez), `isDirty` —la señal obvia para
-   "hay una sesión en curso"— todavía era `false` porque depende de que `timeLeftFocus` ya
-   haya decrementado. Resultado: los controles desaparecían al instante en vez de
-   sobrevivir a la pausa, exactamente lo opuesto al objetivo. Se resolvió con una señal
-   dedicada (`hasStartedSession`), que pasa a `true` apenas `isRunning` se observa `true`
-   por primera vez, ajustada durante el render (patrón que React documenta para esto)
-   en vez de en un efecto.
-2. **El botón "stop" del lock screen no cerraba la sesión**: el handler llamaba al
-   `resetTimer` crudo de `usePomodoro` en vez del `handleReset` que además limpia
-   `hasStartedSession`, así que terminar la sesión desde el lock screen dejaba controles
-   fantasma (audio y metadata seguían activos). Ahora usa el mismo `handleReset` que el
-   botón Reset de la UI y el atajo de teclado `R`.
+- Enrutar el audio ambiental por un `MediaStreamAudioDestinationNode` y conectarlo a un
+  `<audio>` oculto — así el sonido de lluvia existente habilita los controles gratis.
+- O reproducir un `<audio>` en loop con silencio, lo que funciona pero es un hack que
+  algunos navegadores penalizan.
 
-Verificado con Playwright interceptando `setActionHandler`/`.metadata`/`.playbackState` y
-el estado real del `AudioContext`/`<audio>`: ciclo completo start→pause→resume-vía-
-handler→pause-vía-handler→stop-vía-handler con limpieza total; apagar el toggle a mitad de
-sesión limpia todo sin afectar el timer; la fila se oculta sin soporte del navegador;
-persiste tras recargar.
+Queda muy bien combinado con el punto 8 y con el sonido ambiental que ya tienes.
 
 ---
 
