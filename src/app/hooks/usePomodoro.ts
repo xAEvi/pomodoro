@@ -37,6 +37,7 @@ export function usePomodoro({
     useState<AmbientSoundType>("rain");
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [wakeLockEnabled, setWakeLockEnabled] = useState(false);
+  const [mediaSessionEnabled, setMediaSessionEnabled] = useState(false);
 
   // Estados del temporizador (en segundos)
   const [timeLeftFocus, setTimeLeftFocus] = useState(
@@ -120,6 +121,7 @@ export function usePomodoro({
     setAmbientSoundType(persisted.ambientSoundType ?? "rain");
     setNotificationsEnabled(persisted.notificationsEnabled ?? true);
     setWakeLockEnabled(persisted.wakeLockEnabled ?? false);
+    setMediaSessionEnabled(persisted.mediaSessionEnabled ?? false);
     setTimeLeftFocus(nextTimeLeftFocus);
     setTimeLeftBreak(nextTimeLeftBreak);
     endTimeRef.current = restoredEndTime;
@@ -325,6 +327,7 @@ export function usePomodoro({
       ambientSoundType,
       notificationsEnabled,
       wakeLockEnabled,
+      mediaSessionEnabled,
     });
   }, [
     focusTime,
@@ -342,6 +345,7 @@ export function usePomodoro({
     ambientSoundType,
     notificationsEnabled,
     wakeLockEnabled,
+    mediaSessionEnabled,
     hydrated,
   ]);
 
@@ -369,6 +373,8 @@ export function usePomodoro({
     setNotificationsEnabled,
     wakeLockEnabled,
     setWakeLockEnabled,
+    mediaSessionEnabled,
+    setMediaSessionEnabled,
     startTimer,
     pauseTimer,
     resetTimer,

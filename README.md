@@ -26,6 +26,7 @@ In Flexible Mode, the total time is calculated by multiplying the focus and rest
 - **Profile shortcuts from the installed icon**: long-press (Android) or right-click (desktop) the installed app icon to jump straight into a "25/5", "50/10", or "90/20" session, no need to open Settings first.
 - **Keep screen awake** (optional, in settings): holds a screen wake lock while the timer runs so the display doesn't sleep mid-session. Off by default, and hidden on browsers without support.
 - **Update notice**: when a new deploy is available, a banner offers to reload instead of applying it silently — a stale open tab won't suddenly break mid-session because it requested an asset that no longer exists.
+- **Lock screen controls** (optional, in settings): play, pause and stop the timer from the lock screen, a Bluetooth headset, or Android's media notification, with the phase and countdown shown as the track title. Survives pauses and breaks, not just while running. Off by default, and hidden on browsers without support.
 - Keyboard shortcuts: `Space` to play/pause, `R` to reset, `T` to switch phase in Flex mode (shown in a footer hint).
 - Click sounds on buttons for interface feedback.
 - Modern dark-themed interface with smooth transitions and no layout jump when switching between Classic and Flex.

@@ -2,9 +2,10 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { usePomodoro, PomodoroPhase } from "../../hooks/usePomodoro";
+import { usePomodoro, PomodoroPhase, PomodoroMode } from "../../hooks/usePomodoro";
 import { usePictureInPicture } from "../../hooks/usePictureInPicture";
 import { useWakeLock } from "../../hooks/useWakeLock";
+import { useMediaSession } from "../../hooks/useMediaSession";
 import { useServiceWorkerUpdate } from "../../hooks/useServiceWorkerUpdate";
 import { useProfiles } from "../../hooks/useProfiles";
 import { formatTime, formatDurationHM, formatClockTime } from "../../utils/time";
@@ -79,6 +80,8 @@ export default function PomodoroContainer() {
     setNotificationsEnabled,
     wakeLockEnabled,
     setWakeLockEnabled,
+    mediaSessionEnabled,
+    setMediaSessionEnabled,
     startTimer,
     pauseTimer,
     resetTimer,
@@ -234,6 +237,50 @@ export default function PomodoroContainer() {
   const endsAtLabel =
     isRunning && endTime ? formatClockTime(endTime) : null;
 
+  // Controles del timer en la pantalla bloqueada / notificación multimedia.
+  // hasStartedSession pasa a true apenas isRunning se vuelve true por primera
+  // vez, y se mantiene así a través de pausas y breaks; solo vuelve a false
+  // cuando el usuario termina la sesión de verdad (reset o cambio de modo, ver
+  // handleReset/handleChangeMode más abajo). No se puede usar isDirty acá: esa
+  // variable depende de que timeLeftFocus ya haya decrementado al menos un
+  // tick, así que si el usuario pausa dentro de los primeros ~200ms (antes del
+  // primer tick del intervalo), isDirty todavía es false y los controles se
+  // apagarían de inmediato en vez de sobrevivir a la pausa.
+  const [hasStartedSession, setHasStartedSession] = useState(false);
+  const [prevIsRunning, setPrevIsRunning] = useState(isRunning);
+  if (isRunning !== prevIsRunning) {
+    setPrevIsRunning(isRunning);
+    if (isRunning) setHasStartedSession(true);
+  }
+
+  const handleReset = useCallback(() => {
+    resetTimer();
+    setHasStartedSession(false);
+  }, [resetTimer]);
+
+  const handleChangeMode = useCallback(
+    (mode: PomodoroMode) => {
+      changeMode(mode);
+      setHasStartedSession(false);
+    },
+    [changeMode],
+  );
+
+  const mediaSessionActive = mediaSessionEnabled && (isRunning || hasStartedSession);
+  const { isSupported: isMediaSessionSupported } = useMediaSession(mediaSessionActive, {
+    isRunning,
+    timeLabel: formatTime(timeLeft),
+    phaseLabel: phaseLabelCap,
+    currentSession,
+    sessions,
+    startTimer,
+    pauseTimer,
+    // handleReset, no resetTimer directamente: la acción "stop" del lock
+    // screen debe terminar la sesión de verdad (también limpia
+    // hasStartedSession), igual que el botón Reset de la UI.
+    resetTimer: handleReset,
+  });
+
   // Título dinámico de la pestaña para ver el timer sin tenerla activa.
   useEffect(() => {
     if (!isRunning) {
@@ -266,7 +313,7 @@ export default function PomodoroContainer() {
           startTimer();
         }
       } else if (event.key === "r" || event.key === "R") {
-        resetTimer();
+        handleReset();
       } else if (event.key === "t" || event.key === "T") {
         togglePhase();
       }
@@ -274,7 +321,7 @@ export default function PomodoroContainer() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isRunning, startTimer, pauseTimer, resetTimer, togglePhase]);
+  }, [isRunning, startTimer, pauseTimer, handleReset, togglePhase]);
 
   // Minutos restantes de todo el ciclo (no solo de la fase actual), solo tiene
   // sentido en modo clásico porque es el único que avanza de sesión solo.
@@ -369,7 +416,7 @@ export default function PomodoroContainer() {
         <div className="mb-5">
           <ModeSelector
             activeMode={activeMode}
-            onChange={changeMode}
+            onChange={handleChangeMode}
             disabled={isRunning}
             isDirty={isDirty}
           />
@@ -451,7 +498,7 @@ export default function PomodoroContainer() {
           activeMode={activeMode}
           currentPhase={currentPhase}
           onStartPause={isRunning ? pauseTimer : startTimer}
-          onReset={resetTimer}
+          onReset={handleReset}
           onTogglePhase={togglePhase}
         />
 
@@ -482,6 +529,9 @@ export default function PomodoroContainer() {
         wakeLockEnabled={wakeLockEnabled}
         setWakeLockEnabled={setWakeLockEnabled}
         isWakeLockSupported={isWakeLockSupported}
+        mediaSessionEnabled={mediaSessionEnabled}
+        setMediaSessionEnabled={setMediaSessionEnabled}
+        isMediaSessionSupported={isMediaSessionSupported}
         profiles={profiles}
         defaultProfileId={defaultProfileId}
         addProfile={addProfile}

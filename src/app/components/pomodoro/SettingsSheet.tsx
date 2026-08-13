@@ -33,6 +33,9 @@ interface SettingsSheetProps {
   wakeLockEnabled: boolean;
   setWakeLockEnabled: (value: boolean) => void;
   isWakeLockSupported: boolean;
+  mediaSessionEnabled: boolean;
+  setMediaSessionEnabled: (value: boolean) => void;
+  isMediaSessionSupported: boolean;
   profiles: PomodoroProfile[];
   defaultProfileId: string;
   addProfile: (data: ProfileFormData) => PomodoroProfile;
@@ -77,6 +80,9 @@ export default function SettingsSheet({
   wakeLockEnabled,
   setWakeLockEnabled,
   isWakeLockSupported,
+  mediaSessionEnabled,
+  setMediaSessionEnabled,
+  isMediaSessionSupported,
   profiles,
   defaultProfileId,
   addProfile,
@@ -296,7 +302,9 @@ export default function SettingsSheet({
             type="button"
             onClick={() => setNotificationsEnabled(!notificationsEnabled)}
             className={`w-full flex items-center justify-between py-3 ${
-              isWakeLockSupported || showInstallRow ? "border-b border-line-soft" : ""
+              isWakeLockSupported || isMediaSessionSupported || showInstallRow
+                ? "border-b border-line-soft"
+                : ""
             }`}
           >
             <span className="text-left">
@@ -313,7 +321,7 @@ export default function SettingsSheet({
               type="button"
               onClick={() => setWakeLockEnabled(!wakeLockEnabled)}
               className={`w-full flex items-center justify-between py-3 ${
-                showInstallRow ? "border-b border-line-soft" : ""
+                isMediaSessionSupported || showInstallRow ? "border-b border-line-soft" : ""
               }`}
             >
               <span className="text-left">
@@ -323,6 +331,24 @@ export default function SettingsSheet({
                 </span>
               </span>
               <Switch on={wakeLockEnabled} />
+            </button>
+          )}
+
+          {isMediaSessionSupported && (
+            <button
+              type="button"
+              onClick={() => setMediaSessionEnabled(!mediaSessionEnabled)}
+              className={`w-full flex items-center justify-between py-3 ${
+                showInstallRow ? "border-b border-line-soft" : ""
+              }`}
+            >
+              <span className="text-left">
+                <span className="block text-[13px] text-ink">Lock screen controls</span>
+                <span className="block text-[11px] text-faint">
+                  Play, pause and stop from the lock screen
+                </span>
+              </span>
+              <Switch on={mediaSessionEnabled} />
             </button>
           )}
 
