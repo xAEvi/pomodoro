@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-08-14
+
+### Added
+
+- **Aviso de nueva versión disponible en vez de aplicarla sola**: `public/sw.js` ya no llama a `skipWaiting()` automáticamente al instalar un service worker nuevo; ahora queda en estado "waiting" y un banner (`UpdateBanner`, mostrado desde `PomodoroContainer` vía el hook `useServiceWorkerUpdate`) ofrece "Reload" para aplicarla cuando el usuario quiera, o descartar el aviso sin interrumpir la sesión. Antes, una pestaña abierta con JS viejo en memoria podía terminar pidiendo un chunk que el deploy nuevo ya había borrado y romperse a mitad de sesión; ahora la actualización solo se aplica cuando el usuario confirma (o al abrir la app de nuevo). Se eliminó el componente `ServiceWorkerRegistration` (el registro del service worker se movió al nuevo hook, junto al resto de los hooks de `PomodoroContainer`).
+
 ## 2026-08-13
 
 ### Added

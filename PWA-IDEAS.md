@@ -11,6 +11,7 @@ Ordenado por relación impacto/esfuerzo, con notas honestas de soporte por naveg
 - `src/app/hooks/useInstallPrompt.ts` + fila "Install app" en `SettingsSheet`.
 - `src/app/hooks/useWakeLock.ts` + toggle "Keep screen awake" en `SettingsSheet` (idea 1).
 - `shortcuts` en `manifest.ts` + lógica de aplicación en `PomodoroContainer` (idea 2).
+- `src/app/hooks/useServiceWorkerUpdate.ts` + `UpdateBanner` (idea 5).
 
 **Ventaja estructural que ya tienes:** `usePomodoro` calcula el tiempo restante contra
 `endTimeRef` (un timestamp absoluto), no acumulando ticks. Por eso el timer sobrevive al
@@ -175,29 +176,22 @@ bug posible: "perdí todos mis perfiles".
 
 ---
 
-### 5. Aviso de nueva versión disponible
+### ✅ 5. Aviso de nueva versión disponible
 
-Tu `sw.js` llama `skipWaiting()` en install, o sea que un deploy nuevo toma control de
-inmediato. Eso tiene un riesgo real: una pestaña abierta con el JS viejo puede pedir un
-chunk que ya no existe en el deploy nuevo y romperse a mitad de sesión.
+**Implementado.** `sw.js` ya no llama `skipWaiting()` en `install`; el hook
+`useServiceWorkerUpdate` detecta el worker nuevo en estado "waiting" (vía `updatefound` +
+`statechange`) y `UpdateBanner` ofrece "Reload" o descartar el aviso.
 
-Opción más segura: quitar el `skipWaiting()` automático y avisar al usuario.
+**Ajuste sobre el borrador original de esta idea:** no se reutilizó el componente `Toast`
+como se sugería acá — su contrato (auto-descarte a los 2.5s, sin botones) no encaja con
+algo que requiere una decisión explícita del usuario. Se construyó un banner dedicado, con
+el mismo lenguaje visual (píldora, mismo color) pero sin auto-dismiss y con dos acciones.
 
-```ts
-// En ServiceWorkerRegistration.tsx
-const reg = await navigator.serviceWorker.register("/sw.js");
-reg.addEventListener("updatefound", () => {
-  const nuevo = reg.installing;
-  nuevo?.addEventListener("statechange", () => {
-    if (nuevo.state === "installed" && navigator.serviceWorker.controller) {
-      // Hay una versión nueva esperando -> mostrar tu <Toast> con acción "Reload"
-    }
-  });
-});
-```
-
-Y en el toast, `nuevo.postMessage({ type: "SKIP_WAITING" })` + `location.reload()`.
-Reutiliza el componente `Toast` que ya tienes.
+Verificado de punta a punta con Playwright, simulando un deploy nuevo (bump de
+`CACHE_NAME` en el `sw.js` servido en disco, sin reiniciar el server): el worker nuevo
+queda en "waiting" sin auto-activarse, el banner aparece, "Reload" dispara `skipWaiting` →
+`activate` → `controllerchange` → recarga sola con la cache nueva, y el botón de descarte
+solo oculta el aviso sin interrumpir el worker en espera ni la sesión en curso.
 
 ---
 

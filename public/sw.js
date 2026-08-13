@@ -1,7 +1,15 @@
 const CACHE_NAME = "pomodoro-v1";
 
-self.addEventListener("install", (event) => {
-  self.skipWaiting();
+// A propósito NO se llama a skipWaiting() acá. En la primera instalación (sin
+// un worker activo previo) esto no cambia nada: el navegador activa igual
+// porque no hay nada que esperar. Pero en una actualización, saltar la espera
+// automáticamente activaría el worker nuevo mientras una pestaña ya abierta
+// sigue corriendo el JS viejo, que puede terminar pidiendo un chunk que el
+// deploy nuevo borró. En cambio, el worker nuevo queda "waiting" hasta que el
+// usuario confirme desde el banner de actualización (ver mensaje
+// SKIP_WAITING más abajo, y el hook useServiceWorkerUpdate).
+self.addEventListener("message", (event) => {
+  if (event.data?.type === "SKIP_WAITING") self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {

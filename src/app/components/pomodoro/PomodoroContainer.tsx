@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { usePomodoro, PomodoroPhase } from "../../hooks/usePomodoro";
 import { usePictureInPicture } from "../../hooks/usePictureInPicture";
 import { useWakeLock } from "../../hooks/useWakeLock";
+import { useServiceWorkerUpdate } from "../../hooks/useServiceWorkerUpdate";
 import { useProfiles } from "../../hooks/useProfiles";
 import { formatTime, formatDurationHM, formatClockTime } from "../../utils/time";
 import {
@@ -21,6 +22,7 @@ import PhaseCard from "./PhaseCard";
 import TimerControls from "./TimerControls";
 import SettingsSheet from "./SettingsSheet";
 import PipTimer from "./PipTimer";
+import UpdateBanner from "./UpdateBanner";
 import {
   VolumeIcon,
   VolumeOffIcon,
@@ -91,6 +93,9 @@ export default function PomodoroContainer() {
   const { isSupported: isWakeLockSupported } = useWakeLock(
     wakeLockEnabled && isRunning,
   );
+
+  const { updateAvailable, applyUpdate } = useServiceWorkerUpdate();
+  const [updateDismissed, setUpdateDismissed] = useState(false);
 
   useEffect(() => {
     notificationsEnabledRef.current = notificationsEnabled;
@@ -501,6 +506,10 @@ export default function PomodoroContainer() {
           />,
           pipWindow.document.body
         )}
+
+      {updateAvailable && !updateDismissed && (
+        <UpdateBanner onReload={applyUpdate} onDismiss={() => setUpdateDismissed(true)} />
+      )}
     </div>
   );
 }
