@@ -19,5 +19,29 @@ export default function manifest(): MetadataRoute.Manifest {
         purpose: "maskable",
       },
     ],
+    // Atajos al mantener presionado el ícono (Android) o click derecho
+    // (escritorio). Apuntan a los perfiles predefinidos por id fijo, ya que el
+    // manifest es estático y no puede leer los perfiles personalizados del
+    // usuario en localStorage.
+    shortcuts: [
+      {
+        name: "Start 25 / 5",
+        short_name: "25 / 5",
+        url: "/?profile=predefined-25-5&start=1",
+        icons: [{ src: "/icon-192.png", sizes: "192x192", type: "image/png" }],
+      },
+      {
+        name: "Start 50 / 10",
+        short_name: "50 / 10",
+        url: "/?profile=predefined-50-10&start=1",
+        icons: [{ src: "/icon-192.png", sizes: "192x192", type: "image/png" }],
+      },
+      {
+        name: "Start 90 / 20",
+        short_name: "90 / 20",
+        url: "/?profile=predefined-90-20&start=1",
+        icons: [{ src: "/icon-192.png", sizes: "192x192", type: "image/png" }],
+      },
+    ],
   };
 }

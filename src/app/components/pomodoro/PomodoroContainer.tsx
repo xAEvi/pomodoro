@@ -116,18 +116,69 @@ export default function PomodoroContainer() {
 
   const [settingsOpen, setSettingsOpen] = useState(false);
 
+  // Un atajo del manifest (mantener presionado el ícono / click derecho) llega
+  // como ?profile=<id>&start=1. Si arrancó una sesión, esta ref se lo indica al
+  // efecto de abajo, que espera a que focusTime/breakTime/sessions ya reflejen
+  // el perfil elegido antes de resetear y arrancar (ver ese efecto).
+  const pendingShortcutStartRef = useRef(false);
+
   // En la primerísima visita (sin estado de timer persistido todavía), cargamos
-  // el perfil predeterminado en vez de los valores de fábrica (25/5/4).
+  // el perfil predeterminado en vez de los valores de fábrica (25/5/4). Un
+  // atajo de manifest tiene prioridad sobre eso: el usuario ya eligió perfil
+  // explícitamente al mantener presionado el ícono.
   const appliedInitialProfileRef = useRef(false);
   useEffect(() => {
     if (appliedInitialProfileRef.current) return;
     appliedInitialProfileRef.current = true;
+
+    const params = new URLSearchParams(window.location.search);
+    const shortcutProfileId = params.get("profile");
+
+    if (shortcutProfileId) {
+      // Limpiamos la URL de inmediato para que un refresh no vuelva a aplicar
+      // el atajo (y, sobre todo, no reinicie una sesión ya en curso).
+      window.history.replaceState(null, "", window.location.pathname);
+
+      const profile = profiles.find((p) => p.id === shortcutProfileId);
+      if (profile) {
+        setFocusTime(profile.focusTime);
+        setBreakTime(profile.breakTime);
+        setSessions(profile.sessions);
+        if (params.get("start") === "1") pendingShortcutStartRef.current = true;
+        return;
+      }
+      // Perfil del atajo no encontrado (por ejemplo, si el usuario lo borró):
+      // seguimos con el flujo normal de perfil por defecto, como si no
+      // hubiera habido atajo.
+    }
+
     if (hasPersistedState() || !defaultProfile) return;
 
     setFocusTime(defaultProfile.focusTime);
     setBreakTime(defaultProfile.breakTime);
     setSessions(defaultProfile.sessions);
-  }, [defaultProfile, setFocusTime, setBreakTime, setSessions]);
+  }, [defaultProfile, profiles, setFocusTime, setBreakTime, setSessions]);
+
+  // Arranca la sesión del atajo una vez que focusTime/breakTime/sessions ya
+  // reflejan el perfil elegido. Ojo: en el montaje, React corre TODOS los
+  // efectos una vez sin importar sus dependencias, así que este efecto y el
+  // de arriba se ejecutan en el mismo flush inicial — si actuáramos en esa
+  // primera pasada, resetTimer() capturaría el closure viejo (focusTime aún
+  // en el valor por defecto, antes de que el setFocusTime del otro efecto se
+  // refleje en un re-render). Por eso se ignora la primera ejecución y se
+  // actúa recién en la siguiente, cuando focusTime/breakTime/sessions ya
+  // cambiaron de verdad y resetTimer() quedó recreado con el closure fresco.
+  const shortcutStartEffectRanRef = useRef(false);
+  useEffect(() => {
+    if (!shortcutStartEffectRanRef.current) {
+      shortcutStartEffectRanRef.current = true;
+      return;
+    }
+    if (!pendingShortcutStartRef.current) return;
+    pendingShortcutStartRef.current = false;
+    resetTimer();
+    startTimer();
+  }, [focusTime, breakTime, sessions, resetTimer, startTimer]);
 
   // Solicitamos permiso de notificaciones cuando el usuario las tiene habilitadas.
   useEffect(() => {

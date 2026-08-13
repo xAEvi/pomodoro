@@ -10,6 +10,7 @@ Ordenado por relación impacto/esfuerzo, con notas honestas de soporte por naveg
 - `public/sw.js` — service worker: network-first para HTML, cache-first para assets.
 - `src/app/hooks/useInstallPrompt.ts` + fila "Install app" en `SettingsSheet`.
 - `src/app/hooks/useWakeLock.ts` + toggle "Keep screen awake" en `SettingsSheet` (idea 1).
+- `shortcuts` en `manifest.ts` + lógica de aplicación en `PomodoroContainer` (idea 2).
 
 **Ventaja estructural que ya tienes:** `usePomodoro` calcula el tiempo restante contra
 `endTimeRef` (un timestamp absoluto), no acumulando ticks. Por eso el timer sobrevive al
@@ -90,7 +91,24 @@ obligatorio, no opcional.
 
 ---
 
-### 2. Atajos en el manifest — arrancar un perfil desde el ícono
+### ✅ 2. Atajos en el manifest — arrancar un perfil desde el ícono
+
+**Implementado.** `manifest.ts` expone los 3 atajos (`?profile=<id>&start=1`);
+`PomodoroContainer` los lee en el mount y limpia la URL enseguida para que un refresh no
+vuelva a dispararlos.
+
+**Gotcha real encontrado al implementarlo, no obvio de antemano:** React ejecuta *todos*
+los efectos de un componente al menos una vez en el montaje, sin importar sus arrays de
+dependencias — no solo el primero que "cambió". Un efecto que aplica el perfil
+(`setFocusTime`/`setBreakTime`/`setSessions`) y un segundo efecto que arranca el timer
+(`resetTimer` + `startTimer`) corren en el **mismo flush inicial**, así que el segundo
+capturaba el closure viejo de `resetTimer` (con el `focusTime` por defecto, 25, no el del
+perfil elegido) y el timer arrancaba con el tiempo equivocado. La solución fue que el
+efecto de arranque ignore su primera ejecución (la de montaje) y actúe recién en la
+siguiente pasada, cuando el cambio de perfil ya se re-renderizó de verdad y `resetTimer`
+quedó recreado con el closure fresco. Se verificó con cuatro casos: visita fresca con
+`start=1`, visita fresca sin `start`, id de perfil inexistente (perfil borrado) y —el que
+expuso el bug— una sesión distinta ya en curso y "dirty" al momento de disparar el atajo.
 
 Mantener presionado el ícono en Android (o click derecho en escritorio) muestra accesos
 directos. Encaja perfecto con tus perfiles predefinidos de `utils/profiles.ts`.
