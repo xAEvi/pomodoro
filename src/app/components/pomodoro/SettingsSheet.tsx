@@ -6,6 +6,7 @@ import { formatDurationHM } from "../../utils/time";
 import { PomodoroProfile } from "../../utils/profiles";
 import { ProfileFormData } from "../../hooks/useProfiles";
 import { useInstallPrompt } from "../../hooks/useInstallPrompt";
+import { useFocusTrap } from "../../hooks/useFocusTrap";
 import { CloseIcon, DownloadIcon, PlusIcon } from "./icons";
 import ProfileSelector from "./ProfileSelector";
 import ProfileModal from "./ProfileModal";
@@ -91,6 +92,8 @@ export default function SettingsSheet({
   const [deleteTarget, setDeleteTarget] = useState<PomodoroProfile | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const { canInstall, isStandalone, isIos, promptInstall } = useInstallPrompt();
+  const isTopModalOpen = modalProfile !== undefined || deleteTarget !== null;
+  const trapRef = useFocusTrap(open && !isTopModalOpen, onClose);
 
   if (!open) return null;
 
@@ -148,17 +151,19 @@ export default function SettingsSheet({
       role="presentation"
     >
       <div
-        className="w-full sm:max-w-md bg-surface border border-line rounded-t-2xl sm:rounded-2xl p-5 max-h-[90vh] overflow-y-auto"
+        ref={trapRef}
+        tabIndex={-1}
+        className="w-full sm:max-w-md bg-surface border border-line rounded-t-2xl sm:rounded-2xl p-5 max-h-[90vh] overflow-y-auto outline-none"
         role="dialog"
         aria-modal="true"
         aria-label="Settings"
       >
         <div className="flex items-center justify-between mb-4">
-          <span className="text-ink text-sm font-medium">Settings</span>
+          <h2 id="settings-title" className="text-ink text-sm font-medium">Settings</h2>
           <button
             onClick={onClose}
             aria-label="Close settings"
-            className="text-muted hover:text-ink transition-colors"
+            className="text-muted hover:text-ink transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 rounded-md p-1"
           >
             <CloseIcon className="w-4 h-4" />
           </button>
@@ -182,15 +187,17 @@ export default function SettingsSheet({
         </div>
 
         <div className="grid grid-cols-3 gap-3 mb-3">
-          <label className="bg-white/[0.04] rounded-[10px] px-3 py-2.5 block">
+          <label htmlFor="settings-focus" className="bg-white/[0.04] rounded-[10px] px-3 py-2.5 block cursor-text">
             <span className="block text-[11px] text-muted mb-1">Focus</span>
             <span className="flex items-baseline justify-between gap-1">
               <input
+                id="settings-focus"
                 type="number"
                 min={1}
                 max={120}
                 value={focusTime}
                 disabled={disabled}
+                aria-label="Focus duration in minutes"
                 onChange={(e) =>
                   setFocusTime(Math.max(1, parseInt(e.target.value) || 0))
                 }
@@ -200,15 +207,17 @@ export default function SettingsSheet({
             </span>
           </label>
 
-          <label className="bg-white/[0.04] rounded-[10px] px-3 py-2.5 block">
+          <label htmlFor="settings-break" className="bg-white/[0.04] rounded-[10px] px-3 py-2.5 block cursor-text">
             <span className="block text-[11px] text-muted mb-1">Break</span>
             <span className="flex items-baseline justify-between gap-1">
               <input
+                id="settings-break"
                 type="number"
                 min={1}
                 max={60}
                 value={breakTime}
                 disabled={disabled}
+                aria-label="Break duration in minutes"
                 onChange={(e) =>
                   setBreakTime(Math.max(1, parseInt(e.target.value) || 0))
                 }
@@ -218,15 +227,17 @@ export default function SettingsSheet({
             </span>
           </label>
 
-          <label className="bg-white/[0.04] rounded-[10px] px-3 py-2.5 block">
+          <label htmlFor="settings-sessions" className="bg-white/[0.04] rounded-[10px] px-3 py-2.5 block cursor-text">
             <span className="block text-[11px] text-muted mb-1">Sessions</span>
             <span className="flex items-baseline justify-between gap-1">
               <input
+                id="settings-sessions"
                 type="number"
                 min={1}
                 max={12}
                 value={sessions}
                 disabled={disabled}
+                aria-label="Number of sessions"
                 onChange={(e) =>
                   setSessions(Math.max(1, parseInt(e.target.value) || 0))
                 }

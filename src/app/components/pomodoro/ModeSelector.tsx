@@ -33,11 +33,13 @@ export default function ModeSelector({
   };
 
   return (
-    <div className="flex bg-white/5 rounded-full p-[3px]">
+    <div className="flex bg-white/5 rounded-full p-[3px]" role="group" aria-label="Timer mode">
       <button
         onClick={() => handleModeChange("classic")}
         disabled={disabled}
-        className={`flex-1 text-center text-xs py-[5px] rounded-full transition-colors duration-200 ${
+        aria-pressed={activeMode === "classic"}
+        aria-label="Classic mode"
+        className={`flex-1 text-center text-xs py-[5px] rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 ${
           activeMode === "classic"
             ? "bg-ink text-[#101318] font-medium"
             : "text-muted hover:text-zinc-200 disabled:opacity-50"
@@ -48,7 +50,9 @@ export default function ModeSelector({
       <button
         onClick={() => handleModeChange("flex")}
         disabled={disabled}
-        className={`flex-1 text-center text-xs py-[5px] rounded-full transition-colors duration-200 ${
+        aria-pressed={activeMode === "flex"}
+        aria-label="Flex mode"
+        className={`flex-1 text-center text-xs py-[5px] rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 ${
           activeMode === "flex"
             ? "bg-ink text-[#101318] font-medium"
             : "text-muted hover:text-zinc-200 disabled:opacity-50"

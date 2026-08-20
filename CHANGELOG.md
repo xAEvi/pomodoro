@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-08-20
+
+### Added
+
+- **Accesibilidad (C6)**: se añadió `useFocusTrap` (`src/app/hooks/useFocusTrap.ts:1`) con trampa de foco para Tab/Shift+Tab, cierre con `Escape` y restauración del foco previo. Se integró en `SettingsSheet`, `ProfileModal` y `ConfirmModal` (con `role="dialog"`/`alertdialog`, `aria-modal`, `aria-labelledby`/`aria-describedby` y `tabIndex=-1`). Se añadieron `id`/`htmlFor` y `aria-label` explícitos a los inputs de Focus/Break/Sessions y nombre de perfil.
+
+### Fixed
+
+- **Semántica de progreso y controles**: `SessionBar` (`src/app/components/pomodoro/SessionBar.tsx:11`), `ProgressRing` (`src/app/components/pomodoro/ProgressRing.tsx:13`) y `PhaseCard` ahora exponen `role="progressbar"` con `aria-valuenow/min/max` y `aria-label`; `ModeSelector` (`src/app/components/pomodoro/ModeSelector.tsx:36`) expone `role="group"` y `aria-pressed`; `TimerControls` y los botones del header (`PomodoroContainer.tsx:256`) ahora tienen `aria-label` descriptivos, `aria-pressed` y `focus-visible:ring` para navegación por teclado. `PhaseCard` expone `role="group"` por fase.
+
 ## 2026-08-14
 
 ### Added

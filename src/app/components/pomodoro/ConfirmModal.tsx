@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
+import { useFocusTrap } from "../../hooks/useFocusTrap";
 
 interface ConfirmModalProps {
   open: boolean;
@@ -23,16 +24,7 @@ export default function ConfirmModal({
   onConfirm,
   onCancel,
 }: ConfirmModalProps) {
-  useEffect(() => {
-    if (!open) return;
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onCancel();
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [open, onCancel]);
+  const trapRef = useFocusTrap(open, onCancel);
 
   if (!open) return null;
 
@@ -43,14 +35,17 @@ export default function ConfirmModal({
       role="presentation"
     >
       <div
-        className="w-full max-w-sm bg-surface border border-line rounded-2xl p-5"
+        ref={trapRef}
+        tabIndex={-1}
+        className="w-full max-w-sm bg-surface border border-line rounded-2xl p-5 outline-none"
         onClick={(e) => e.stopPropagation()}
         role="alertdialog"
         aria-modal="true"
-        aria-label={title}
+        aria-labelledby="confirm-title"
+        aria-describedby="confirm-message"
       >
-        <h2 className="text-ink text-sm font-medium mb-2">{title}</h2>
-        <p className="text-[13px] text-muted mb-5">{message}</p>
+        <h2 id="confirm-title" className="text-ink text-sm font-medium mb-2">{title}</h2>
+        <p id="confirm-message" className="text-[13px] text-muted mb-5">{message}</p>
 
         <div className="flex justify-end gap-2">
           <button

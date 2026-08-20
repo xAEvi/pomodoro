@@ -32,6 +32,8 @@ export default function PhaseCard({
             ? "border-focus/50 bg-focus/[0.07]"
             : "border-break/50 bg-break/[0.07]"
         }`}
+        role="group"
+        aria-label={`${label} timer, ${isRunning ? "running" : "paused"}`}
       >
         <div className="flex items-center justify-between mb-1.5">
           <span
@@ -43,11 +45,21 @@ export default function PhaseCard({
             <span className="text-[11px] text-muted">{statText}</span>
           )}
         </div>
-        <div className="font-mono text-4xl text-ink tracking-tight leading-tight tabular-nums">
+        <div
+          className="font-mono text-4xl text-ink tracking-tight leading-tight tabular-nums"
+          aria-live="off"
+          aria-atomic="true"
+        >
           {timeLabel}
         </div>
-        <div className="h-[3px] rounded-full bg-white/[0.09] mt-3">
+        <div className="h-[3px] rounded-full bg-white/[0.09] mt-3" role="progressbar"
+          aria-valuenow={Math.round(progress * 100)}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label={`${Math.round(progress * 100)}% used`}
+        >
           <span
+            aria-hidden="true"
             className={`block h-[3px] rounded-full transition-[width] duration-500 ease-linear ${colorBg}`}
             style={{ width: `${Math.min(100, Math.max(0, progress * 100))}%` }}
           />

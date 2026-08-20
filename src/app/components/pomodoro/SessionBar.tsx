@@ -14,7 +14,14 @@ export default function SessionBar({
   colorClass,
 }: SessionBarProps) {
   return (
-    <div className="flex gap-[5px]">
+    <div
+      className="flex gap-[5px]"
+      role="progressbar"
+      aria-valuenow={currentSession}
+      aria-valuemin={1}
+      aria-valuemax={sessions}
+      aria-label={`Session ${currentSession} of ${sessions}`}
+    >
       {Array.from({ length: sessions }, (_, index) => {
         const isCompleted = index < currentSession - 1;
         const isCurrent = index === currentSession - 1;
@@ -26,6 +33,7 @@ export default function SessionBar({
         return (
           <span
             key={index}
+            aria-hidden="true"
             className={`flex-1 h-[3px] rounded-full transition-colors duration-300 ${segmentClass}`}
           />
         );

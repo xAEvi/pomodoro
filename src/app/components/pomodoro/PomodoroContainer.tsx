@@ -321,17 +321,18 @@ export default function PomodoroContainer() {
             <button
               onClick={() => setAmbientSoundEnabled(!ambientSoundEnabled)}
               title="Ambient sound"
+              aria-label={ambientSoundEnabled ? "Disable ambient sound" : "Enable ambient sound"}
               aria-pressed={ambientSoundEnabled}
-              className={`w-[26px] h-[26px] rounded-md flex items-center justify-center transition-colors ${
+              className={`w-[26px] h-[26px] rounded-md flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 ${
                 ambientSoundEnabled
                   ? "bg-break/[0.14] text-break"
                   : "text-muted hover:text-zinc-200 hover:bg-white/5"
               }`}
             >
               {ambientSoundEnabled ? (
-                <VolumeIcon className="w-4 h-4" />
+                <VolumeIcon className="w-4 h-4" aria-hidden="true" />
               ) : (
-                <VolumeOffIcon className="w-4 h-4" />
+                <VolumeOffIcon className="w-4 h-4" aria-hidden="true" />
               )}
             </button>
 
@@ -339,28 +340,30 @@ export default function PomodoroContainer() {
               <button
                 onClick={() => (pipWindow ? closePip() : openPip())}
                 title="Always-on-top (Picture-in-Picture)"
+                aria-label={pipWindow ? "Close always-on-top window" : "Open always-on-top window"}
                 aria-pressed={Boolean(pipWindow)}
-                className={`w-[26px] h-[26px] rounded-md flex items-center justify-center transition-colors ${
+                className={`w-[26px] h-[26px] rounded-md flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 ${
                   pipWindow
                     ? "bg-white/[0.06] text-ink"
                     : "text-muted hover:text-zinc-200 hover:bg-white/5"
                 }`}
               >
-                <PictureInPictureIcon className="w-4 h-4" />
+                <PictureInPictureIcon className="w-4 h-4" aria-hidden="true" />
               </button>
             )}
 
             <button
               onClick={() => setSettingsOpen(true)}
               title="Settings"
+              aria-label="Open settings"
               aria-pressed={settingsOpen}
-              className={`w-[26px] h-[26px] rounded-md flex items-center justify-center transition-colors ${
+              className={`w-[26px] h-[26px] rounded-md flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 ${
                 settingsOpen
                   ? "bg-white/[0.06] text-ink"
                   : "text-muted hover:text-zinc-200 hover:bg-white/5"
               }`}
             >
-              <SettingsIcon className="w-4 h-4" />
+              <SettingsIcon className="w-4 h-4" aria-hidden="true" />
             </button>
           </div>
         </div>

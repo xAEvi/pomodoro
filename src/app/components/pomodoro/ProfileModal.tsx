@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { PomodoroProfile } from "../../utils/profiles";
 import { formatDurationHM } from "../../utils/time";
+import { useFocusTrap } from "../../hooks/useFocusTrap";
 import { CloseIcon } from "./icons";
 import type { ProfileFormData } from "../../hooks/useProfiles";
 
@@ -28,17 +29,7 @@ export default function ProfileModal({
   const [breakTime, setBreakTime] = useState(profile?.breakTime ?? 5);
   const [sessions, setSessions] = useState(profile?.sessions ?? 4);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!open) return;
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [open, onClose]);
+  const trapRef = useFocusTrap(open, onClose);
 
   if (!open) return null;
 
@@ -72,29 +63,32 @@ export default function ProfileModal({
       role="presentation"
     >
       <div
-        className="w-full sm:max-w-md bg-surface border border-line rounded-t-2xl sm:rounded-2xl p-5 max-h-[90vh] overflow-y-auto"
+        ref={trapRef}
+        tabIndex={-1}
+        className="w-full sm:max-w-md bg-surface border border-line rounded-t-2xl sm:rounded-2xl p-5 max-h-[90vh] overflow-y-auto outline-none"
         role="dialog"
         aria-modal="true"
         aria-label={profile ? "Edit profile" : "Create profile"}
       >
         <div className="flex items-center justify-between mb-4">
-          <span className="text-ink text-sm font-medium">
+          <h2 className="text-ink text-sm font-medium">
             {profile ? "Edit profile" : "Create profile"}
-          </span>
+          </h2>
           <button
             onClick={onClose}
             aria-label="Close"
-            className="text-muted hover:text-ink transition-colors"
+            className="text-muted hover:text-ink transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 rounded-md p-1"
           >
             <CloseIcon className="w-4 h-4" />
           </button>
         </div>
 
-        <label className="block mb-4">
+        <label htmlFor="profile-name" className="block mb-4">
           <span className="block text-[11px] text-muted mb-1.5">
             Profile name
           </span>
           <input
+            id="profile-name"
             type="text"
             autoFocus
             value={name}
@@ -103,19 +97,22 @@ export default function ProfileModal({
               if (e.key === "Enter") handleSave();
             }}
             placeholder="E.g: Coding, Extended break"
+            aria-label="Profile name"
             className="w-full bg-white/[0.04] rounded-[10px] px-3 py-2.5 text-sm text-ink placeholder:text-faint focus:outline-none focus:ring-1 focus:ring-white/20"
           />
         </label>
 
         <div className="grid grid-cols-3 gap-3 mb-4">
-          <label className="bg-white/[0.04] rounded-[10px] px-3 py-2.5 block">
+          <label htmlFor="profile-focus" className="bg-white/[0.04] rounded-[10px] px-3 py-2.5 block cursor-text">
             <span className="block text-[11px] text-muted mb-1">Focus</span>
             <span className="flex items-baseline justify-between gap-1">
               <input
+                id="profile-focus"
                 type="number"
                 min={FOCUS_LIMITS.min}
                 max={FOCUS_LIMITS.max}
                 value={focusTime}
+                aria-label="Focus duration in minutes"
                 onChange={(e) =>
                   setFocusTime(Math.max(0, parseInt(e.target.value) || 0))
                 }
@@ -125,14 +122,16 @@ export default function ProfileModal({
             </span>
           </label>
 
-          <label className="bg-white/[0.04] rounded-[10px] px-3 py-2.5 block">
+          <label htmlFor="profile-break" className="bg-white/[0.04] rounded-[10px] px-3 py-2.5 block cursor-text">
             <span className="block text-[11px] text-muted mb-1">Break</span>
             <span className="flex items-baseline justify-between gap-1">
               <input
+                id="profile-break"
                 type="number"
                 min={BREAK_LIMITS.min}
                 max={BREAK_LIMITS.max}
                 value={breakTime}
+                aria-label="Break duration in minutes"
                 onChange={(e) =>
                   setBreakTime(Math.max(0, parseInt(e.target.value) || 0))
                 }
@@ -142,16 +141,18 @@ export default function ProfileModal({
             </span>
           </label>
 
-          <label className="bg-white/[0.04] rounded-[10px] px-3 py-2.5 block">
+          <label htmlFor="profile-sessions" className="bg-white/[0.04] rounded-[10px] px-3 py-2.5 block cursor-text">
             <span className="block text-[11px] text-muted mb-1">
               Sessions
             </span>
             <span className="flex items-baseline justify-between gap-1">
               <input
+                id="profile-sessions"
                 type="number"
                 min={SESSIONS_LIMITS.min}
                 max={SESSIONS_LIMITS.max}
                 value={sessions}
+                aria-label="Number of sessions"
                 onChange={(e) =>
                   setSessions(Math.max(0, parseInt(e.target.value) || 0))
                 }

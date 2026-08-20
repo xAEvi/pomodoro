@@ -23,12 +23,21 @@ export default function ProgressRing({
   const dashOffset = circumference * (1 - clampedProgress);
 
   return (
-    <div className="relative" style={{ width: size, height: size }}>
+    <div
+      className="relative"
+      style={{ width: size, height: size }}
+      role="progressbar"
+      aria-valuenow={Math.round(clampedProgress * 100)}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-label={`${Math.round(clampedProgress * 100)}% elapsed`}
+    >
       <svg
         viewBox={`0 0 ${size} ${size}`}
         width={size}
         height={size}
         className="-rotate-90"
+        aria-hidden="true"
       >
         <circle
           cx={size / 2}
