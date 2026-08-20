@@ -42,8 +42,8 @@ export function usePictureInPicture() {
     if (!isSupported || !window.documentPictureInPicture) return;
 
     const pip = await window.documentPictureInPicture.requestWindow({
-      width: 260,
-      height: 148,
+      width: 300,
+      height: 180,
     });
 
     // El user agent aplica un margin por defecto al <body> del documento

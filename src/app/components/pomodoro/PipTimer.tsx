@@ -39,7 +39,7 @@ function PipTimerFull({
   const bgWash = colorKey === "focus" ? "bg-focus-wash" : "bg-break-wash";
   const clampedProgress = Math.min(1, Math.max(0, progress));
   const progressPercent = Math.round(clampedProgress * 100);
-  const size = 78;
+  const size = 98;
   const strokeWidth = 5;
   const radius = size / 2 - strokeWidth;
   const circumference = 2 * Math.PI * radius;
@@ -47,7 +47,7 @@ function PipTimerFull({
 
   return (
     <div
-      className={`h-screen w-screen flex flex-col items-center justify-center gap-1.5 p-2 transition-colors duration-700 ${bgWash}`}
+      className={`h-screen w-screen flex flex-col items-center justify-center gap-2 p-2.5 transition-colors duration-700 ${bgWash}`}
       role="group"
       aria-label={`${phaseLabel} ${timeLabel} ${progressPercent}%`}
     >
@@ -89,28 +89,28 @@ function PipTimerFull({
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-0 px-1">
-          <span className={`text-[8px] lowercase tracking-[0.12em] font-medium ${colorText}`}>
+          <span className={`text-[9px] lowercase tracking-[0.12em] font-medium ${colorText}`}>
             {phaseLabel}
           </span>
-          <span className="font-mono text-[20px] leading-none text-ink tabular-nums tracking-tight">
+          <span className="font-mono text-[24px] leading-none text-ink tabular-nums tracking-tight">
             {timeLabel}
           </span>
           {endsAtLabel && (
-            <span className="text-[8px] text-faint leading-none mt-0.5 tabular-nums">ends {endsAtLabel}</span>
+            <span className="text-[9px] text-faint leading-none mt-0.5 tabular-nums">ends {endsAtLabel}</span>
           )}
         </div>
       </div>
 
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1.5">
         <button
           onClick={onStartPause}
           aria-label={isRunning ? "Pause timer" : "Start timer"}
-          className="px-3 py-1 text-[11px] font-medium rounded-full bg-ink text-[#101318] flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 whitespace-nowrap leading-none"
+          className="px-3.5 py-1.5 text-xs font-medium rounded-full bg-ink text-[#101318] flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 whitespace-nowrap leading-none"
         >
           {isRunning ? (
-            <PauseIcon className="w-3 h-3 shrink-0" aria-hidden="true" />
+            <PauseIcon className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
           ) : (
-            <PlayIcon className="w-3 h-3 shrink-0" aria-hidden="true" />
+            <PlayIcon className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
           )}
           {isRunning ? "Pause" : "Start"}
         </button>
@@ -118,9 +118,9 @@ function PipTimerFull({
           <button
             onClick={onTogglePhase}
             aria-label="Switch phase"
-            className="px-3 py-1 text-[11px] font-medium rounded-full border border-white/[0.14] bg-white/[0.04] text-ink flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 whitespace-nowrap leading-none"
+            className="px-3.5 py-1.5 text-xs font-medium rounded-full border border-white/[0.14] bg-white/[0.04] text-ink flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 whitespace-nowrap leading-none"
           >
-            <ArrowsExchangeIcon className="w-3 h-3 shrink-0" aria-hidden="true" />
+            <ArrowsExchangeIcon className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
             Switch
           </button>
         )}
