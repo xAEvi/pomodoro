@@ -326,6 +326,33 @@ export default function PomodoroContainer() {
   const flexEndsAtLabel =
     isRunning && endTime ? formatClockTime(endTime + otherPhaseTimeLeft * 1000) : null;
 
+  const pipEndsAtLabel = activeMode === "flex" ? flexEndsAtLabel : endsAtLabel;
+
+  // Atajos de teclado también en la ventana PiP (cuando está abierta)
+  useEffect(() => {
+    if (!pipWindow) return;
+
+    const handlePipKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target && ["INPUT", "TEXTAREA"].includes(target.tagName)) return;
+
+      if (event.key === " ") {
+        event.preventDefault();
+        if (isRunning) pauseTimer();
+        else startTimer();
+      } else if (event.key === "r" || event.key === "R") {
+        resetTimer();
+      } else if (event.key === "t" || event.key === "T") {
+        togglePhase();
+      } else if (event.key === "Escape") {
+        closePip();
+      }
+    };
+
+    pipWindow.addEventListener("keydown", handlePipKeyDown);
+    return () => pipWindow.removeEventListener("keydown", handlePipKeyDown);
+  }, [pipWindow, isRunning, startTimer, pauseTimer, resetTimer, togglePhase, closePip]);
+
   return (
     <div
       className={`min-h-screen w-full flex items-center justify-center p-4 transition-colors duration-700 ${
@@ -535,8 +562,10 @@ export default function PomodoroContainer() {
             isRunning={isRunning}
             activeMode={activeMode}
             progress={progress}
+            endsAtLabel={pipEndsAtLabel}
             onStartPause={isRunning ? pauseTimer : startTimer}
             onTogglePhase={togglePhase}
+            onReset={resetTimer}
             pipWindow={pipWindow}
           />,
           pipWindow.document.body
