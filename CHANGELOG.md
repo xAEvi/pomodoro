@@ -5,6 +5,7 @@
 ### Added
 
 - **Accesibilidad (C6)**: se añadió `useFocusTrap` (`src/app/hooks/useFocusTrap.ts:1`) con trampa de foco para Tab/Shift+Tab, cierre con `Escape` y restauración del foco previo. Se integró en `SettingsSheet`, `ProfileModal` y `ConfirmModal` (con `role="dialog"`/`alertdialog`, `aria-modal`, `aria-labelledby`/`aria-describedby` y `tabIndex=-1`). Se añadieron `id`/`htmlFor` y `aria-label` explícitos a los inputs de Focus/Break/Sessions y nombre de perfil.
+- **Onboarding (C8)**: nuevo componente `Onboarding` (`src/app/components/pomodoro/Onboarding.tsx:1`) que explica en primera visita la diferencia entre modo Classic (auto-alterna) y Flex (block budget con switch manual `T`). Usa `useFocusTrap`, se muestra solo si `pomodoro-onboarding-dismissed` no existe y `hasPersistedState()` es falso, y se persiste el descarte en `localStorage`. Se añadió botón `?` en el header (`PomodoroContainer.tsx:303`) para reabrirlo en cualquier momento.
 
 ### Fixed
 

@@ -23,6 +23,7 @@ import TimerControls from "./TimerControls";
 import SettingsSheet from "./SettingsSheet";
 import PipTimer from "./PipTimer";
 import UpdateBanner from "./UpdateBanner";
+import Onboarding from "./Onboarding";
 import {
   VolumeIcon,
   VolumeOffIcon,
@@ -120,12 +121,32 @@ export default function PomodoroContainer() {
   } = useProfiles();
 
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [onboardingOpen, setOnboardingOpen] = useState(false);
 
   // Un atajo del manifest (mantener presionado el ícono / click derecho) llega
   // como ?profile=<id>&start=1. Si arrancó una sesión, esta ref se lo indica al
   // efecto de abajo, que espera a que focusTime/breakTime/sessions ya reflejen
   // el perfil elegido antes de resetear y arrancar (ver ese efecto).
   const pendingShortcutStartRef = useRef(false);
+
+  // Onboarding: solo en primera visita y si no fue descartado antes
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const dismissed = window.localStorage.getItem("pomodoro-onboarding-dismissed");
+    if (dismissed) return;
+    if (!hasPersistedState()) {
+      setOnboardingOpen(true);
+    }
+  }, []);
+
+  const dismissOnboarding = useCallback(() => {
+    setOnboardingOpen(false);
+    try {
+      window.localStorage.setItem("pomodoro-onboarding-dismissed", "1");
+    } catch {
+      // ignore
+    }
+  }, []);
 
   // En la primerísima visita (sin estado de timer persistido todavía), cargamos
   // el perfil predeterminado en vez de los valores de fábrica (25/5/4). Un
@@ -353,6 +374,15 @@ export default function PomodoroContainer() {
             )}
 
             <button
+              onClick={() => setOnboardingOpen(true)}
+              title="How it works"
+              aria-label="How it works"
+              className="w-[26px] h-[26px] rounded-md flex items-center justify-center transition-colors text-muted hover:text-zinc-200 hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 text-[12px] font-medium"
+            >
+              ?
+            </button>
+
+            <button
               onClick={() => setSettingsOpen(true)}
               title="Settings"
               aria-label="Open settings"
@@ -463,6 +493,8 @@ export default function PomodoroContainer() {
           {activeMode === "flex" ? " · t switch" : ""} · r reset
         </div>
       </div>
+
+      <Onboarding open={onboardingOpen} onDismiss={dismissOnboarding} />
 
       <SettingsSheet
         open={settingsOpen}
