@@ -27,7 +27,7 @@ export default function PhaseCard({
   if (variant === "active") {
     return (
       <div
-        className={`rounded-xl border p-4 mb-2.5 ${
+        className={`rounded-xl border p-4 ${
           colorKey === "focus"
             ? "border-focus/50 bg-focus/[0.07]"
             : "border-break/50 bg-break/[0.07]"
@@ -69,7 +69,7 @@ export default function PhaseCard({
   }
 
   return (
-    <div className="rounded-xl border border-line p-3.5 mb-auto">
+    <div className="rounded-xl border border-line p-3.5">
       <div className="flex items-center justify-between">
         <span className="text-[11px] tracking-wider text-faint lowercase">
           {label} · banked

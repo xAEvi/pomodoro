@@ -36,6 +36,7 @@ import {
   VolumeOffIcon,
   PictureInPictureIcon,
   SettingsIcon,
+  StarIcon,
 } from "./icons";
 
 function notifyPhaseComplete(completedPhase: PomodoroPhase) {
@@ -129,6 +130,18 @@ export default function PomodoroContainer() {
 
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [onboardingOpen, setOnboardingOpen] = useState(false);
+
+  const activeProfile = profiles.find(
+    (p) =>
+      p.focusTime === focusTime &&
+      p.breakTime === breakTime &&
+      p.sessions === sessions,
+  );
+  const isDefaultActive = activeProfile
+    ? activeProfile.id === defaultProfileId
+    : false;
+  const classicTotalMinutes = getClassicTotalMinutes(focusTime, breakTime, sessions);
+  const flexTotalMinutes = getFlexTotalMinutes(focusTime, breakTime, sessions);
 
   // Un atajo del manifest (mantener presionado el ícono / click derecho) llega
   // como ?profile=<id>&start=1. Si arrancó una sesión, esta ref se lo indica al
@@ -330,9 +343,6 @@ export default function PomodoroContainer() {
   const minutesLeftInCycle = Math.ceil(totalRemainingSeconds / 60);
 
   // Bloque total de tiempo configurado para el ciclo completo.
-  // Classic sin break final, Flex con presupuesto completo.
-  const classicTotalMinutes = getClassicTotalMinutes(focusTime, breakTime, sessions);
-  const flexTotalMinutes = getFlexTotalMinutes(focusTime, breakTime, sessions);
   const blockTotalMinutes = flexTotalMinutes;
 
   // Posición sintética dentro de la barra de sesiones en modo flex: como no
@@ -384,8 +394,8 @@ export default function PomodoroContainer() {
       }`}
     >
       <div className="w-full max-w-md bg-surface border border-line rounded-2xl p-[18px] min-h-[430px] flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-4">
+        {/* Header — tight group */}
+        <div className="flex items-center justify-between">
           <span className="text-ink text-sm font-medium tracking-tight">
             Pomodoro
           </span>
@@ -449,8 +459,37 @@ export default function PomodoroContainer() {
           </div>
         </div>
 
-        {/* Selector de Modo */}
-        <div className="mb-5">
+        {/* Profile context — layout: surfaced on card, not buried in sheet */}
+        <div className="mt-2 mb-3 flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setSettingsOpen(true)}
+            aria-label="Open profile settings"
+            className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.04] border border-line-soft px-2.5 py-1 text-[11px] hover:bg-white/[0.07] hover:border-white/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20"
+          >
+            {isDefaultActive && (
+              <StarIcon filled className="w-3 h-3 text-focus shrink-0" aria-hidden="true" />
+            )}
+            <span className="text-ink font-medium truncate max-w-[110px]">
+              {activeProfile?.name ?? "Custom"}
+            </span>
+            <span className="text-white/20">·</span>
+            <span className="font-mono text-faint tabular-nums">
+              {activeProfile
+                ? `${activeProfile.focusTime}/${activeProfile.breakTime}`
+                : `${focusTime}/${breakTime}`}{" "}
+              · {activeProfile ? activeProfile.sessions : sessions}×
+            </span>
+          </button>
+          <span className="hidden sm:inline text-[11px] text-faint tabular-nums">
+            {activeMode === "classic"
+              ? `C ${formatDurationHM(classicTotalMinutes)}`
+              : `F ${formatDurationHM(flexTotalMinutes)}`}
+          </span>
+        </div>
+
+        {/* Mode — generous separation from profile context */}
+        <div className="mb-4">
           <ModeSelector
             activeMode={activeMode}
             onChange={changeMode}
@@ -461,7 +500,7 @@ export default function PomodoroContainer() {
 
         {activeMode === "classic" ? (
           <>
-            <div className="flex justify-center mb-3.5">
+            <div className="flex justify-center mb-4">
               <ProgressRing progress={progress} colorClass={currentPhase === "focus" ? "text-focus" : "text-break"}>
                 <span
                   className={`text-[11px] lowercase tracking-wider ${
@@ -479,22 +518,23 @@ export default function PomodoroContainer() {
               </ProgressRing>
             </div>
 
-            <div className="mb-1.5">
+            {/* Tight group: bar + meta */}
+            <div className="flex flex-col gap-1.5 mb-auto">
               <SessionBar
                 sessions={sessions}
                 currentSession={currentSession}
                 colorClass={currentPhase === "focus" ? "bg-focus" : "bg-break"}
               />
-            </div>
-            <div className="flex justify-between text-[11px] text-faint mb-auto">
-              <span>
-                Session {currentSession} of {sessions}
-              </span>
-              <span>{minutesLeftInCycle} min left</span>
+              <div className="flex justify-between text-[11px] text-faint">
+                <span>
+                  Session {currentSession} of {sessions}
+                </span>
+                <span>{minutesLeftInCycle} min left</span>
+              </div>
             </div>
           </>
         ) : (
-          <div className="mb-auto">
+          <div className="mb-auto flex flex-col gap-2">
             <PhaseCard
               label={currentPhase}
               colorKey={currentPhase}
@@ -511,20 +551,23 @@ export default function PomodoroContainer() {
               variant="banked"
             />
 
-            <div className="flex justify-between text-[11px] text-faint mt-3.5 mb-1.5">
-              <span>Block budget</span>
-              <span>
-                {sessions} × {focusTime}/{breakTime} ·{" "}
-                {formatDurationHM(blockTotalMinutes)}
-              </span>
-            </div>
-            <SessionBar
-              sessions={sessions}
-              currentSession={flexSyntheticSession}
-              colorClass={currentPhase === "focus" ? "bg-focus" : "bg-break"}
-            />
-            <div className="flex justify-between text-[11px] text-faint mt-1.5 h-4">
-              <span>{flexEndsAtLabel ? `ends ${flexEndsAtLabel}` : ""}</span>
+            {/* Generous group: budget + bar + ends */}
+            <div className="mt-1 flex flex-col gap-1.5">
+              <div className="flex justify-between text-[11px] text-faint">
+                <span>Block budget</span>
+                <span>
+                  {sessions} × {focusTime}/{breakTime} ·{" "}
+                  {formatDurationHM(blockTotalMinutes)}
+                </span>
+              </div>
+              <SessionBar
+                sessions={sessions}
+                currentSession={flexSyntheticSession}
+                colorClass={currentPhase === "focus" ? "bg-focus" : "bg-break"}
+              />
+              <div className="text-[11px] text-faint h-4">
+                {flexEndsAtLabel ? `ends ${flexEndsAtLabel}` : ""}
+              </div>
             </div>
           </div>
         )}
