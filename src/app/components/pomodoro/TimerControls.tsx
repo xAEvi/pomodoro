@@ -34,7 +34,7 @@ export default function TimerControls({
       <button
         onClick={() => handleAction(onStartPause)}
         aria-label={isRunning ? "Pause timer" : "Start timer"}
-        className="flex-1 h-11 rounded-full bg-ink text-[#101318] text-sm font-medium flex items-center justify-center gap-1.5 transition-transform active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
+        className="flex-1 h-11 rounded-full bg-ink text-[#101318] text-sm font-medium flex items-center justify-center gap-1.5 transition-transform active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
       >
         {isRunning ? (
           <PauseIcon className="w-4 h-4" aria-hidden="true" />

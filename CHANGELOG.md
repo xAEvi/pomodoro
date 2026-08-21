@@ -2,6 +2,10 @@
 
 ## 2026-08-21
 
+### Fixed
+
+- **Polish: break wash, atajos y focus del botón primario** — `globals.css:21` corregido `break-wash` de `cyan #22D3EE` a `break #5DCAA5` al 18% sobre `canvas` para que el fondo de descanso coincida con el anillo `text-break` (P1 del critique `src-app-components-pomodoro-pomodorocontainer-tsx`); `PomodoroContainer.tsx:392` header `gap-0.5→1` para respiración entre iconos de 26px; `PomodoroContainer.tsx:542` hints `space / T / R` elevados de `text-[11px] text-subtle` a `kbd` chips (`bg-white/[0.06] border` + `text-faint` 4.5:1) con `tracking-wide` y separadores `·` para persona keyboard-first; `TimerControls.tsx:37` anillo de foco del botón primario `bg-ink` con `ring-offset-surface` para contraste sobre claro.
+
 ### Added
 
 - **PiP compact muestra "ends HH:MM" en el centro**: `PipTimerCompact` (`src/app/components/pomodoro/PipTimer.tsx:132`) ahora renderiza `endsAtLabel` (`pipEndsAtLabel` de `PomodoroContainer.tsx:353` — `endsAtLabel` en classic y `flexEndsAtLabel` combinado en flex) en el medio de la barra compacta, entre el contador y el botón de pausa. Antes solo se veía en el modo PiP grande (`PipTimerFull`), el layout chiquito (`isCompact` de `usePipSize.ts:6`) solo mostraba `timeLabel` y el botón. Se usa `flex-1` centrado con `text-faint`, `tabular-nums` y `drop-shadow` para legibilidad sobre el wash de progreso, y un `span` vacío como spacer cuando no hay `endsAtLabel` (timer pausado) para mantener `space-between`.

@@ -389,7 +389,7 @@ export default function PomodoroContainer() {
           <span className="text-ink text-sm font-medium tracking-tight">
             Pomodoro
           </span>
-          <div className="flex gap-0.5 text-muted text-base">
+          <div className="flex gap-1 text-muted text-base">
             <button
               onClick={() => setAmbientSoundEnabled(!ambientSoundEnabled)}
               title="Ambient sound"
@@ -539,9 +539,25 @@ export default function PomodoroContainer() {
           onTogglePhase={togglePhase}
         />
 
-        <div className="mt-3 text-[11px] text-subtle text-center">
-          space {isRunning ? "pause" : "start"}
-          {activeMode === "flex" ? " · t switch" : ""} · r reset
+        <div className="mt-3.5 flex items-center justify-center gap-1.5 text-[11px] tracking-wide text-faint text-center">
+          <span className="inline-flex items-center gap-1">
+            <kbd className="rounded bg-white/[0.06] border border-white/[0.06] px-1 py-0.5 font-mono text-[10px] leading-none text-muted">space</kbd>
+            <span>{isRunning ? "pause" : "start"}</span>
+          </span>
+          {activeMode === "flex" && (
+            <>
+              <span className="text-white/20">·</span>
+              <span className="inline-flex items-center gap-1">
+                <kbd className="rounded bg-white/[0.06] border border-white/[0.06] px-1 py-0.5 font-mono text-[10px] leading-none text-muted">T</kbd>
+                <span>switch</span>
+              </span>
+            </>
+          )}
+          <span className="text-white/20">·</span>
+          <span className="inline-flex items-center gap-1">
+            <kbd className="rounded bg-white/[0.06] border border-white/[0.06] px-1 py-0.5 font-mono text-[10px] leading-none text-muted">R</kbd>
+            <span>reset</span>
+          </span>
         </div>
       </div>
 

@@ -18,9 +18,9 @@
   --color-break: #5dcaa5;
   --color-cyan: #22d3ee;
 
-  /* Fondo de fase: variantes atenuadas de rojo (focus) y cian (break) sobre el canvas oscuro */
-  --color-focus-wash: color-mix(in srgb, var(--color-focus) 20%, var(--color-canvas));
-  --color-break-wash: color-mix(in srgb, var(--color-cyan) 20%, var(--color-canvas));
+  /* Fondo de fase: variantes atenuadas de rojo (focus) y verde (break) sobre el canvas oscuro */
+  --color-focus-wash: color-mix(in srgb, var(--color-focus) 18%, var(--color-canvas));
+  --color-break-wash: color-mix(in srgb, var(--color-break) 18%, var(--color-canvas));
 }
 
 @theme inline {
