@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { PomodoroMode, PomodoroPhase } from "../../hooks/usePomodoro";
 import { playClickSound } from "../../utils/audio";
 import { PlayIcon, PauseIcon, RefreshIcon, ArrowsExchangeIcon } from "./icons";
@@ -12,6 +12,8 @@ interface TimerControlsProps {
   onStartPause: () => void;
   onReset: () => void;
   onTogglePhase: () => void;
+  /** Incrementa en cada Switch Flex; anima icono + bump */
+  switchKey?: number;
 }
 
 export default function TimerControls({
@@ -21,6 +23,7 @@ export default function TimerControls({
   onStartPause,
   onReset,
   onTogglePhase,
+  switchKey = 0,
 }: TimerControlsProps) {
   const handleAction = (callback: () => void) => {
     playClickSound();
@@ -28,6 +31,22 @@ export default function TimerControls({
   };
 
   const nextPhaseLabel = currentPhase === "focus" ? "Break" : "Focus";
+
+  // Bump animation that restarts on every switchKey increment sin perder focus
+  const [bumpOn, setBumpOn] = useState(false);
+  useEffect(() => {
+    if (switchKey === 0) return;
+    setBumpOn(false);
+    // Force reflow before re-adding class para reiniciar keyframe
+    const id = requestAnimationFrame(() => {
+      requestAnimationFrame(() => setBumpOn(true));
+    });
+    const t = setTimeout(() => setBumpOn(false), 420);
+    return () => {
+      cancelAnimationFrame(id);
+      clearTimeout(t);
+    };
+  }, [switchKey]);
 
   return (
     <div className="flex items-center gap-2 mt-4">
@@ -52,9 +71,15 @@ export default function TimerControls({
           aria-label={`Switch to ${nextPhaseLabel}`}
           aria-keyshortcuts="t"
           title={`Switch to ${nextPhaseLabel} (T)`}
-          className="h-11 px-4 rounded-full border border-white/[0.16] text-ink text-[13px] flex items-center gap-1.5 hover:bg-white/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20"
+          className={`h-11 px-4 rounded-full border border-white/[0.16] text-ink text-[13px] flex items-center gap-1.5 hover:bg-white/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 active:scale-[0.97] ${bumpOn ? "switch-btn-pressed" : ""}`}
         >
-          <ArrowsExchangeIcon className="w-4 h-4" aria-hidden="true" />
+          <span
+            key={`icon-${switchKey}`}
+            className={`inline-flex ${switchKey > 0 ? "switch-icon-animate" : ""}`}
+            aria-hidden="true"
+          >
+            <ArrowsExchangeIcon className="w-4 h-4" />
+          </span>
           {nextPhaseLabel}
         </button>
       )}

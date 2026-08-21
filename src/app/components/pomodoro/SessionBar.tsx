@@ -33,7 +33,7 @@ export default function SessionBar({
         <div className="flex-1 h-[3px] rounded-full bg-white/[0.09] relative overflow-hidden">
           <span
             aria-hidden="true"
-            className={`absolute inset-y-0 left-0 rounded-full transition-[width] duration-500 ease-linear ${colorClass}`}
+            className={`absolute inset-y-0 left-0 rounded-full transition-[width,background-color] duration-[480ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${colorClass}`}
             style={{ width: `${pct}%` }}
           />
           {/* Tick marks for each session boundary */}

@@ -68,3 +68,135 @@ body {
   35% { transform: scale(0.985); }
   100% { transform: scale(1); }
 }
+
+/* ── Flex Switch · polished transition ──────────────────────────────
+   Focal: las dos tarjetas respiran como un solo instrumento (420-460ms).
+   Continuidad: active exhala → banked, banked inhala → active con
+   traslación opuesta + escalado sutil. Feedback: shimmer + icono gira.
+   Todo transform/opacity/border-color/bg, aislado, respetando reduced-motion.
+   ─────────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes flex-active-enter {
+    0% {
+      transform: translateY(9px) scale(0.986);
+      opacity: 0.62;
+    }
+    100% {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+    }
+  }
+  @keyframes flex-banked-enter {
+    0% {
+      transform: translateY(-7px) scale(0.989);
+      opacity: 0.68;
+    }
+    100% {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+    }
+  }
+  @keyframes flex-label-in {
+    0% {
+      transform: translateY(4px);
+      opacity: 0;
+    }
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  @keyframes flex-time-in {
+    0% {
+      transform: translateY(7px) scale(0.985);
+      opacity: 0;
+      filter: blur(2px);
+    }
+    100% {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+      filter: blur(0);
+    }
+  }
+  @keyframes flex-shimmer-sweep {
+    0% {
+      transform: translateX(-108%);
+      opacity: 0;
+    }
+    18% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(108%);
+      opacity: 0;
+    }
+  }
+  @keyframes switch-icon-flip {
+    0% {
+      transform: rotate(0deg) scale(1);
+    }
+    42% {
+      transform: rotate(88deg) scale(0.9);
+    }
+    100% {
+      transform: rotate(180deg) scale(1);
+    }
+  }
+  @keyframes switch-btn-bump {
+    0% {
+      transform: scale(1);
+    }
+    32% {
+      transform: scale(0.96);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  .flex-active-animate {
+    animation: flex-active-enter 440ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    will-change: transform, opacity;
+  }
+  .flex-banked-animate {
+    animation: flex-banked-enter 400ms cubic-bezier(0.16, 1, 0.3, 1) 68ms both;
+    will-change: transform, opacity;
+  }
+  .phase-label-anim {
+    animation: flex-label-in 280ms cubic-bezier(0.16, 1, 0.3, 1) 85ms both;
+  }
+  .phase-time-anim {
+    animation: flex-time-in 360ms cubic-bezier(0.16, 1, 0.3, 1) 105ms both;
+  }
+  .phase-progress-anim {
+    animation: flex-label-in 240ms ease-out 175ms both;
+  }
+  .flex-shimmer {
+    background: linear-gradient(
+      100deg,
+      transparent 28%,
+      rgba(255, 255, 255, 0.075) 50%,
+      transparent 72%
+    );
+    animation: flex-shimmer-sweep 560ms cubic-bezier(0.32, 0, 0.09, 1) 120ms both;
+  }
+  .switch-icon-animate {
+    animation: switch-icon-flip 380ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .switch-btn-pressed {
+    animation: switch-btn-bump 300ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flex-active-animate,
+  .flex-banked-animate,
+  .phase-label-anim,
+  .phase-time-anim,
+  .phase-progress-anim,
+  .flex-shimmer,
+  .switch-icon-animate,
+  .switch-btn-pressed {
+    animation: none !important;
+  }
+}

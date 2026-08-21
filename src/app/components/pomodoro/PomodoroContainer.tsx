@@ -135,6 +135,9 @@ export default function PomodoroContainer() {
   const [onboardingOpen, setOnboardingOpen] = useState(false);
   const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
   const [resetToast, setResetToast] = useState<string | null>(null);
+  const [flexSwitchKey, setFlexSwitchKey] = useState(0);
+  const flexPrevPhaseRef = useRef<PomodoroPhase>(currentPhase);
+  const flexHadFirstRenderRef = useRef(false);
   const resetSnapshotRef = useRef<{
     timeLeftFocus: number;
     timeLeftBreak: number;
@@ -415,6 +418,25 @@ export default function PomodoroContainer() {
     return () => pipWindow.removeEventListener("keydown", handlePipKeyDown);
   }, [pipWindow, isRunning, startTimer, pauseTimer, requestReset, togglePhase, closePip, activeMode]);
 
+  // Flex Switch — detect polarity flip to orchestrate paired-card motion
+  // Solo anima switches reales dentro de Flex (no hidratación ni cambio de modo)
+  useEffect(() => {
+    if (activeMode !== "flex") {
+      flexPrevPhaseRef.current = currentPhase;
+      flexHadFirstRenderRef.current = false;
+      return;
+    }
+    if (!flexHadFirstRenderRef.current) {
+      flexHadFirstRenderRef.current = true;
+      flexPrevPhaseRef.current = currentPhase;
+      return;
+    }
+    if (flexPrevPhaseRef.current !== currentPhase) {
+      setFlexSwitchKey((k) => k + 1);
+    }
+    flexPrevPhaseRef.current = currentPhase;
+  }, [currentPhase, activeMode]);
+
   return (
     <div
       className={`min-h-screen w-full flex items-center justify-center p-4 transition-colors duration-700 ${
@@ -572,12 +594,14 @@ export default function PomodoroContainer() {
               isRunning={isRunning}
               statText={`${Math.round(progress * 100)}% used`}
               progress={progress}
+              animationKey={flexSwitchKey}
             />
             <PhaseCard
               label={otherPhaseLabel}
               colorKey={otherColorKey}
               timeLabel={formatTime(otherPhaseTimeLeft)}
               variant="banked"
+              animationKey={flexSwitchKey}
             />
 
             <div className="mt-1 flex flex-col gap-1.5">
@@ -609,6 +633,7 @@ export default function PomodoroContainer() {
           onStartPause={isRunning ? pauseTimer : startTimer}
           onReset={requestReset}
           onTogglePhase={togglePhase}
+          switchKey={flexSwitchKey}
         />
 
         <div role="note" aria-label="Keyboard shortcuts" className="mt-3 flex flex-wrap items-center justify-center gap-1.5 text-[11px] tracking-wide text-muted text-center">
@@ -620,7 +645,12 @@ export default function PomodoroContainer() {
             <>
               <span className="text-white/20">·</span>
               <span className="inline-flex items-center gap-1">
-                <kbd className="rounded bg-white/[0.08] border border-white/[0.08] px-1.5 py-1 font-mono text-[10px] leading-none text-ink">T</kbd>
+                <kbd
+                  key={`kbd-T-${flexSwitchKey}`}
+                  className={`rounded bg-white/[0.08] border border-white/[0.08] px-1.5 py-1 font-mono text-[10px] leading-none text-ink inline-block ${flexSwitchKey > 0 ? "motion-safe:animate-[switch-btn-bump_260ms_cubic-bezier(0.16,1,0.3,1)]" : ""}`}
+                >
+                  T
+                </kbd>
                 <span>switch</span>
               </span>
             </>
