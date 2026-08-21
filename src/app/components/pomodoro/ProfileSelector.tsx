@@ -3,7 +3,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { PomodoroProfile } from "../../utils/profiles";
-import { formatDurationHM } from "../../utils/time";
+import {
+  formatDurationHM,
+  getClassicTotalMinutes,
+  getFlexTotalMinutes,
+} from "../../utils/time";
 import {
   CheckIcon,
   ChevronDownIcon,
@@ -184,9 +188,21 @@ export default function ProfileSelector({
                     </span>
                     <span className="block text-[11px] text-faint">
                       {profile.focusTime}/{profile.breakTime} ·{" "}
-                      {profile.sessions}x ·{" "}
+                      {profile.sessions}x · C{" "}
                       {formatDurationHM(
-                        profile.sessions * (profile.focusTime + profile.breakTime),
+                        getClassicTotalMinutes(
+                          profile.focusTime,
+                          profile.breakTime,
+                          profile.sessions,
+                        ),
+                      )}{" "}
+                      · F{" "}
+                      {formatDurationHM(
+                        getFlexTotalMinutes(
+                          profile.focusTime,
+                          profile.breakTime,
+                          profile.sessions,
+                        ),
                       )}
                     </span>
                   </span>

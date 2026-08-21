@@ -7,7 +7,14 @@ import { usePictureInPicture } from "../../hooks/usePictureInPicture";
 import { useWakeLock } from "../../hooks/useWakeLock";
 import { useServiceWorkerUpdate } from "../../hooks/useServiceWorkerUpdate";
 import { useProfiles } from "../../hooks/useProfiles";
-import { formatTime, formatDurationHM, formatClockTime } from "../../utils/time";
+import {
+  formatTime,
+  formatDurationHM,
+  formatClockTime,
+  getClassicRemainingSeconds,
+  getClassicTotalMinutes,
+  getFlexTotalMinutes,
+} from "../../utils/time";
 import {
   playAlertSound,
   startAmbientSound,
@@ -299,17 +306,34 @@ export default function PomodoroContainer() {
 
   // Minutos restantes de todo el ciclo (no solo de la fase actual), solo tiene
   // sentido en modo clásico porque es el único que avanza de sesión solo.
-  const remainingSessionsAfterCurrent = Math.max(0, sessions - currentSession);
-  const secondsOfOtherPhaseThisSession =
-    currentPhase === "focus" ? breakTime * 60 : 0;
+  // En clásico el último focus no tiene break final: N*focus + (N-1)*break.
   const totalRemainingSeconds =
-    timeLeft +
-    secondsOfOtherPhaseThisSession +
-    remainingSessionsAfterCurrent * (focusTime + breakTime) * 60;
+    activeMode === "classic"
+      ? getClassicRemainingSeconds(
+          timeLeft,
+          currentPhase,
+          currentSession,
+          focusTime,
+          breakTime,
+          sessions,
+        )
+      : (() => {
+          const remainingSessionsAfterCurrent = Math.max(0, sessions - currentSession);
+          const secondsOfOtherPhaseThisSession =
+            currentPhase === "focus" ? breakTime * 60 : 0;
+          return (
+            timeLeft +
+            secondsOfOtherPhaseThisSession +
+            remainingSessionsAfterCurrent * (focusTime + breakTime) * 60
+          );
+        })();
   const minutesLeftInCycle = Math.ceil(totalRemainingSeconds / 60);
 
-  // Bloque total de tiempo (foco + break) configurado para el ciclo completo.
-  const blockTotalMinutes = sessions * (focusTime + breakTime);
+  // Bloque total de tiempo configurado para el ciclo completo.
+  // Classic sin break final, Flex con presupuesto completo.
+  const classicTotalMinutes = getClassicTotalMinutes(focusTime, breakTime, sessions);
+  const flexTotalMinutes = getFlexTotalMinutes(focusTime, breakTime, sessions);
+  const blockTotalMinutes = flexTotalMinutes;
 
   // Posición sintética dentro de la barra de sesiones en modo flex: como no
   // hay avance de sesión automático, se deriva del progreso de la fase activa.

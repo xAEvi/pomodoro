@@ -162,8 +162,13 @@ export function usePomodoro({
       onPhaseComplete?.(finishedPhase);
 
       if (activeMode === "classic") {
-        // En modo clásico alternamos de fase automáticamente
+        // En modo clásico el último focus no tiene break final (ej. 2×25/10 = 25+10+25)
         if (finishedPhase === "focus") {
+          if (currentSession >= sessions) {
+            // Ciclo completo: queda en focus 00:00 pausado hasta Reset
+            isDirtyRef.current = false;
+            return;
+          }
           setCurrentPhase("break");
         } else {
           setCurrentPhase("focus");
@@ -179,7 +184,7 @@ export function usePomodoro({
       }
       // En modo Flex no se hace nada automático al terminar; el usuario controla el flujo.
     },
-    [activeMode, sessions, autoStart, onPhaseComplete],
+    [activeMode, sessions, autoStart, onPhaseComplete, currentSession],
   );
 
   // Recalcula los segundos restantes contra el punto de finalización absoluto

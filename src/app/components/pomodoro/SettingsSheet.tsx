@@ -2,7 +2,11 @@
 
 import React, { useState } from "react";
 import { AmbientSoundType } from "../../utils/audio";
-import { formatDurationHM } from "../../utils/time";
+import {
+  formatDurationHM,
+  getClassicTotalMinutes,
+  getFlexTotalMinutes,
+} from "../../utils/time";
 import { PomodoroProfile } from "../../utils/profiles";
 import { ProfileFormData } from "../../hooks/useProfiles";
 import { useInstallPrompt } from "../../hooks/useInstallPrompt";
@@ -101,7 +105,8 @@ export default function SettingsSheet({
     (p) =>
       p.focusTime === focusTime && p.breakTime === breakTime && p.sessions === sessions,
   );
-  const totalMinutes = sessions * (focusTime + breakTime);
+  const classicTotalMinutes = getClassicTotalMinutes(focusTime, breakTime, sessions);
+  const flexTotalMinutes = getFlexTotalMinutes(focusTime, breakTime, sessions);
   const ambientLabel = ambientSoundType === "rain" ? "Rain" : "White noise";
   const showInstallRow = !isStandalone && (canInstall || isIos);
 
@@ -243,8 +248,9 @@ export default function SettingsSheet({
                 }
                 className="w-full min-w-0 font-mono text-xl text-ink bg-transparent focus:outline-none disabled:opacity-60"
               />
-              <span className="text-[11px] text-faint shrink-0">
-                = {formatDurationHM(totalMinutes)}
+              <span className="text-[11px] text-faint shrink-0 leading-none text-right">
+                <span className="block">C {formatDurationHM(classicTotalMinutes)}</span>
+                <span className="block">F {formatDurationHM(flexTotalMinutes)}</span>
               </span>
             </span>
           </label>

@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-08-21
+
+### Fixed
+
+- **Classic sin break final**: el ciclo clásico ya no añade un break después del último focus. `2×25/10` pasa de `1h10m` (`sessions*(focus+break)`) a `1h00m` (`sessions*focus+(sessions-1)*break`: `25+10+25`). Se corrigió `handlePhaseCompletion` (`src/app/hooks/usePomodoro.ts:164`) para detenerse en `focus` `00:00` cuando `currentSession >= sessions` en modo classic, y `getClassicRemainingSeconds`/`getClassicTotalMinutes` (`src/app/utils/time.ts:52`) para el `min left` (`PomodoroContainer.tsx:300`). Flex mantiene `sessions*(focus+break)`.
+- **Doble etiquetado de duración**: `SettingsSheet` (`src/app/components/pomodoro/SettingsSheet.tsx:108`), `ProfileModal` (`src/app/components/pomodoro/ProfileModal.tsx:36`) y `ProfileSelector` (`src/app/components/pomodoro/ProfileSelector.tsx:189`) ahora muestran `C` (classic sin break final) y `F` (flex budget) separados: ej. `Classic 1h15m · Flex 2h00m` para `4×25/5`.
+
 ## 2026-08-20
 
 ### Added

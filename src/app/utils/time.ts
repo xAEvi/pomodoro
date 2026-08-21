@@ -49,3 +49,47 @@ export function formatClockTime(timestampMs: number): string {
   const minutes = String(date.getMinutes()).padStart(2, "0");
   return `${hours}:${minutes}`;
 }
+
+/**
+ * Total del ciclo en modo clásico: N focuses + (N-1) breaks (sin break final).
+ * Ej. 2×25/10 → 25+10+25 = 60.
+ */
+export function getClassicTotalMinutes(
+  focusTime: number,
+  breakTime: number,
+  sessions: number,
+): number {
+  return sessions * focusTime + Math.max(0, sessions - 1) * breakTime;
+}
+
+/** Total del bloque en modo flex: N*(focus+break) (presupuesto completo). */
+export function getFlexTotalMinutes(
+  focusTime: number,
+  breakTime: number,
+  sessions: number,
+): number {
+  return sessions * (focusTime + breakTime);
+}
+
+/**
+ * Segundos restantes del ciclo clásico incluyendo la fase actual.
+ * - En focus k: quedan (s-k) pares focus+break
+ * - En break k: quedan (s-k) focuses + (s-k-1) breaks
+ */
+export function getClassicRemainingSeconds(
+  timeLeft: number,
+  currentPhase: "focus" | "break",
+  currentSession: number,
+  focusTime: number,
+  breakTime: number,
+  sessions: number,
+): number {
+  if (currentPhase === "focus") {
+    return timeLeft + (sessions - currentSession) * (focusTime + breakTime) * 60;
+  }
+  return (
+    timeLeft +
+    (sessions - currentSession) * focusTime * 60 +
+    Math.max(0, sessions - currentSession - 1) * breakTime * 60
+  );
+}

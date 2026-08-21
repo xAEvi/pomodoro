@@ -2,7 +2,11 @@
 
 import React, { useState } from "react";
 import { PomodoroProfile } from "../../utils/profiles";
-import { formatDurationHM } from "../../utils/time";
+import {
+  formatDurationHM,
+  getClassicTotalMinutes,
+  getFlexTotalMinutes,
+} from "../../utils/time";
 import { useFocusTrap } from "../../hooks/useFocusTrap";
 import { CloseIcon } from "./icons";
 import type { ProfileFormData } from "../../hooks/useProfiles";
@@ -33,7 +37,8 @@ export default function ProfileModal({
 
   if (!open) return null;
 
-  const totalMinutes = sessions * (focusTime + breakTime);
+  const classicTotalMinutes = getClassicTotalMinutes(focusTime, breakTime, sessions);
+  const flexTotalMinutes = getFlexTotalMinutes(focusTime, breakTime, sessions);
 
   const handleSave = () => {
     const trimmedName = name.trim();
@@ -164,8 +169,9 @@ export default function ProfileModal({
 
         <div className="flex items-center justify-between text-[11px] text-faint mb-5">
           <span>Estimated total duration</span>
-          <span className="text-ink font-mono">
-            {formatDurationHM(totalMinutes)}
+          <span className="text-ink font-mono text-right leading-none">
+            <span className="block">C {formatDurationHM(classicTotalMinutes)}</span>
+            <span className="block text-faint">F {formatDurationHM(flexTotalMinutes)}</span>
           </span>
         </div>
 
