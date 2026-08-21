@@ -59,11 +59,11 @@ export default function Onboarding({ open, onDismiss }: OnboardingProps) {
             <p className="text-[11px] text-subtle mt-2 font-mono">25 / 5 · 4 sessions</p>
           </div>
 
-          <div className="rounded-xl border border-focus/30 bg-focus/[0.07] p-3.5">
+          <div className="rounded-xl border border-line bg-white/[0.03] p-3.5">
             <div className="flex items-center gap-1.5 mb-1.5">
-              <span className="w-6 h-6 rounded-full bg-focus text-white flex items-center justify-center text-[10px] font-bold">B</span>
+              <span className="w-6 h-6 rounded-full bg-white/[0.08] text-ink border border-line flex items-center justify-center text-[10px] font-bold">B</span>
               <span className="text-[12px] font-medium text-ink">Flex</span>
-              <span className="ml-auto text-[10px] text-focus border border-focus/30 rounded-full px-1.5 py-0.5">you control</span>
+              <span className="ml-auto text-[10px] text-faint border border-line rounded-full px-1.5 py-0.5">you control</span>
             </div>
             <p className="text-[11px] leading-relaxed text-faint">
               One <span className="text-ink">block budget</span> (e.g. 4×25/5). Switch <span className="text-ink">focus ⇄ break</span> with the button or <span className="font-mono text-muted">T</span> whenever you want.

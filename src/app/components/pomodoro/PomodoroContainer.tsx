@@ -31,6 +31,8 @@ import SettingsSheet from "./SettingsSheet";
 import PipTimer from "./PipTimer";
 import UpdateBanner from "./UpdateBanner";
 import Onboarding from "./Onboarding";
+import ConfirmModal from "./ConfirmModal";
+import Toast from "./Toast";
 import {
   VolumeIcon,
   VolumeOffIcon,
@@ -91,6 +93,7 @@ export default function PomodoroContainer() {
     startTimer,
     pauseTimer,
     resetTimer,
+    restoreSnapshot,
     togglePhase,
     changeMode,
   } = usePomodoro({
@@ -130,6 +133,15 @@ export default function PomodoroContainer() {
 
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [onboardingOpen, setOnboardingOpen] = useState(false);
+  const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
+  const [resetToast, setResetToast] = useState<string | null>(null);
+  const resetSnapshotRef = useRef<{
+    timeLeftFocus: number;
+    timeLeftBreak: number;
+    currentSession: number;
+    currentPhase: PomodoroPhase;
+    isRunning: boolean;
+  } | null>(null);
 
   const activeProfile = profiles.find(
     (p) =>
@@ -293,6 +305,35 @@ export default function PomodoroContainer() {
     setFaviconColor(currentPhase === "focus" ? "#e24b4a" : "#5dcaa5");
   }, [isRunning, currentPhase]);
 
+  const requestReset = useCallback(() => {
+    if (!isDirty) {
+      resetTimer();
+      return;
+    }
+    resetSnapshotRef.current = {
+      timeLeftFocus,
+      timeLeftBreak,
+      currentSession,
+      currentPhase,
+      isRunning,
+    };
+    setResetConfirmOpen(true);
+  }, [isDirty, timeLeftFocus, timeLeftBreak, currentSession, currentPhase, isRunning, resetTimer]);
+
+  const confirmReset = useCallback(() => {
+    setResetConfirmOpen(false);
+    resetTimer();
+    setResetToast("Timer reset");
+  }, [resetTimer]);
+
+  const undoReset = useCallback(() => {
+    const snap = resetSnapshotRef.current;
+    if (!snap) return;
+    restoreSnapshot(snap);
+    resetSnapshotRef.current = null;
+    setResetToast(null);
+  }, [restoreSnapshot]);
+
   // Atajos de teclado: Space (play/pause), R (reset), T (alternar fase en modo Flex).
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -307,15 +348,15 @@ export default function PomodoroContainer() {
           startTimer();
         }
       } else if (event.key === "r" || event.key === "R") {
-        resetTimer();
+        requestReset();
       } else if (event.key === "t" || event.key === "T") {
-        togglePhase();
+        if (activeMode === "flex") togglePhase();
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isRunning, startTimer, pauseTimer, resetTimer, togglePhase]);
+  }, [isRunning, startTimer, pauseTimer, requestReset, togglePhase, activeMode]);
 
   // Minutos restantes de todo el ciclo (no solo de la fase actual), solo tiene
   // sentido en modo clásico porque es el único que avanza de sesión solo.
@@ -330,24 +371,14 @@ export default function PomodoroContainer() {
           breakTime,
           sessions,
         )
-      : (() => {
-          const remainingSessionsAfterCurrent = Math.max(0, sessions - currentSession);
-          const secondsOfOtherPhaseThisSession =
-            currentPhase === "focus" ? breakTime * 60 : 0;
-          return (
-            timeLeft +
-            secondsOfOtherPhaseThisSession +
-            remainingSessionsAfterCurrent * (focusTime + breakTime) * 60
-          );
-        })();
+      : timeLeftFocus + timeLeftBreak;
   const minutesLeftInCycle = Math.ceil(totalRemainingSeconds / 60);
 
-  // Posición sintética dentro de la barra de sesiones en modo flex: como no
-  // hay avance de sesión automático, se deriva del progreso de la fase activa.
-  const flexSyntheticSession = Math.min(
-    sessions,
-    Math.floor(progress * sessions) + 1,
-  );
+  const flexBudgetProgress = (() => {
+    const total = flexTotalMinutes * 60;
+    const remaining = timeLeftFocus + timeLeftBreak;
+    return total > 0 ? Math.min(1, Math.max(0, (total - remaining) / total)) : 0;
+  })();
 
   const otherPhaseTimeLeft =
     currentPhase === "focus" ? timeLeftBreak : timeLeftFocus;
@@ -372,9 +403,9 @@ export default function PomodoroContainer() {
         if (isRunning) pauseTimer();
         else startTimer();
       } else if (event.key === "r" || event.key === "R") {
-        resetTimer();
+        requestReset();
       } else if (event.key === "t" || event.key === "T") {
-        togglePhase();
+        if (activeMode === "flex") togglePhase();
       } else if (event.key === "Escape") {
         closePip();
       }
@@ -382,7 +413,7 @@ export default function PomodoroContainer() {
 
     pipWindow.addEventListener("keydown", handlePipKeyDown);
     return () => pipWindow.removeEventListener("keydown", handlePipKeyDown);
-  }, [pipWindow, isRunning, startTimer, pauseTimer, resetTimer, togglePhase, closePip]);
+  }, [pipWindow, isRunning, startTimer, pauseTimer, requestReset, togglePhase, closePip, activeMode]);
 
   return (
     <div
@@ -391,18 +422,18 @@ export default function PomodoroContainer() {
       }`}
     >
       <div className="w-full max-w-md bg-surface border border-line rounded-2xl p-[18px] min-h-[430px] flex flex-col">
-        {/* Header — tight group */}
+        {/* Header — 32px hit targets, instrument tight */}
         <div className="flex items-center justify-between">
           <span className="text-ink text-sm font-medium tracking-tight">
             Pomodoro
           </span>
-          <div className="flex gap-1 text-muted text-base">
+          <div className="flex gap-1.5 text-muted text-base">
             <button
               onClick={() => setAmbientSoundEnabled(!ambientSoundEnabled)}
-              title="Ambient sound"
+              title={ambientSoundEnabled ? "Disable ambient sound (—)" : "Enable ambient sound (—)"}
               aria-label={ambientSoundEnabled ? "Disable ambient sound" : "Enable ambient sound"}
               aria-pressed={ambientSoundEnabled}
-              className={`w-[26px] h-[26px] rounded-md flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 ${
+              className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25 focus-visible:ring-offset-2 focus-visible:ring-offset-surface ${
                 ambientSoundEnabled
                   ? "bg-break/[0.14] text-break"
                   : "text-muted hover:text-zinc-200 hover:bg-white/5"
@@ -421,7 +452,7 @@ export default function PomodoroContainer() {
                 title="Always-on-top (Picture-in-Picture)"
                 aria-label={pipWindow ? "Close always-on-top window" : "Open always-on-top window"}
                 aria-pressed={Boolean(pipWindow)}
-                className={`w-[26px] h-[26px] rounded-md flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 ${
+                className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25 focus-visible:ring-offset-2 focus-visible:ring-offset-surface ${
                   pipWindow
                     ? "bg-white/[0.06] text-ink"
                     : "text-muted hover:text-zinc-200 hover:bg-white/5"
@@ -435,7 +466,7 @@ export default function PomodoroContainer() {
               onClick={() => setOnboardingOpen(true)}
               title="How it works"
               aria-label="How it works"
-              className="w-[26px] h-[26px] rounded-md flex items-center justify-center transition-colors text-muted hover:text-zinc-200 hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 text-[12px] font-medium"
+              className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors text-muted hover:text-zinc-200 hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25 focus-visible:ring-offset-2 focus-visible:ring-offset-surface text-[12px] font-medium"
             >
               ?
             </button>
@@ -445,7 +476,7 @@ export default function PomodoroContainer() {
               title="Settings"
               aria-label="Open settings"
               aria-pressed={settingsOpen}
-              className={`w-[26px] h-[26px] rounded-md flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 ${
+              className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25 focus-visible:ring-offset-2 focus-visible:ring-offset-surface ${
                 settingsOpen
                   ? "bg-white/[0.06] text-ink"
                   : "text-muted hover:text-zinc-200 hover:bg-white/5"
@@ -456,18 +487,29 @@ export default function PomodoroContainer() {
           </div>
         </div>
 
-        {/* Profile context — layout: surfaced on card, not buried in sheet */}
-        <div className="mt-2 mb-3 flex items-center gap-2">
+        {/* Mode — primary decision, generous separation */}
+        <div className="mt-3 mb-3">
+          <ModeSelector
+            activeMode={activeMode}
+            onChange={changeMode}
+            disabled={isRunning}
+            isDirty={isDirty}
+            dirtyDetail={`${formatTime(timeLeft)} left in ${phaseLabelCap} · Session ${currentSession} of ${sessions}`}
+          />
+        </div>
+
+        {/* Profile context — demoted to faint inline link, not second pill */}
+        <div className="mb-3 flex items-center gap-1.5 text-[11px]">
           <button
             type="button"
             onClick={() => setSettingsOpen(true)}
             aria-label="Open profile settings"
-            className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.04] border border-line-soft px-2.5 py-1 text-[11px] hover:bg-white/[0.07] hover:border-white/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20"
+            className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.02] border border-transparent hover:bg-white/[0.05] hover:border-line-soft px-2.5 py-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20"
           >
             {isDefaultActive && (
               <StarIcon filled className="w-3 h-3 text-focus shrink-0" aria-hidden="true" />
             )}
-            <span className="text-ink font-medium truncate max-w-[110px]">
+            <span className="text-muted font-medium truncate max-w-[110px]">
               {activeProfile?.name ?? "Custom"}
             </span>
             <span className="text-white/20">·</span>
@@ -478,22 +520,11 @@ export default function PomodoroContainer() {
               · {activeProfile ? activeProfile.sessions : sessions}×
             </span>
           </button>
-          <span className="hidden sm:inline text-[11px] text-faint tabular-nums">
+          <span className="text-[11px] text-faint tabular-nums">
             {activeMode === "classic"
               ? `C ${formatDurationHM(classicTotalMinutes)}`
               : `F ${formatDurationHM(flexTotalMinutes)}`}
           </span>
-        </div>
-
-        {/* Mode — generous separation from profile context */}
-        <div className="mb-4">
-          <ModeSelector
-            activeMode={activeMode}
-            onChange={changeMode}
-            disabled={isRunning}
-            isDirty={isDirty}
-            dirtyDetail={`${formatTime(timeLeft)} left in ${phaseLabelCap} · Session ${currentSession} of ${sessions}`}
-          />
         </div>
 
         {activeMode === "classic" ? (
@@ -549,13 +580,20 @@ export default function PomodoroContainer() {
               variant="banked"
             />
 
-            {/* Bar + ends — Block budget ya vive en el pill superior (F 2 h 00 m), evita redundancia */}
             <div className="mt-1 flex flex-col gap-1.5">
               <SessionBar
+                variant="budget"
                 sessions={sessions}
-                currentSession={flexSyntheticSession}
+                currentSession={1}
+                budgetProgress={flexBudgetProgress}
+                budgetLabel={`Budget ${Math.round(flexBudgetProgress * 100)}% used`}
                 colorClass={currentPhase === "focus" ? "bg-focus" : "bg-break"}
               />
+              <div className="flex justify-between text-[11px] text-faint">
+                <span className="hidden sm:inline">Flex · you control — switch with T</span>
+                <span className="sm:hidden">Budget</span>
+                <span className="tabular-nums">F {formatDurationHM(flexTotalMinutes)} · {minutesLeftInCycle} min left</span>
+              </div>
               <div className="text-[11px] text-faint h-4">
                 {flexEndsAtLabel ? `ends ${flexEndsAtLabel}` : ""}
               </div>
@@ -569,31 +607,50 @@ export default function PomodoroContainer() {
           activeMode={activeMode}
           currentPhase={currentPhase}
           onStartPause={isRunning ? pauseTimer : startTimer}
-          onReset={resetTimer}
+          onReset={requestReset}
           onTogglePhase={togglePhase}
         />
 
-        <div className="mt-3.5 flex items-center justify-center gap-1.5 text-[11px] tracking-wide text-faint text-center">
+        <div role="note" aria-label="Keyboard shortcuts" className="mt-3 flex flex-wrap items-center justify-center gap-1.5 text-[11px] tracking-wide text-muted text-center">
           <span className="inline-flex items-center gap-1">
-            <kbd className="rounded bg-white/[0.06] border border-white/[0.06] px-1 py-0.5 font-mono text-[10px] leading-none text-muted">space</kbd>
+            <kbd className="rounded bg-white/[0.08] border border-white/[0.08] px-1.5 py-1 font-mono text-[10px] leading-none text-ink">space</kbd>
             <span>{isRunning ? "pause" : "start"}</span>
           </span>
           {activeMode === "flex" && (
             <>
               <span className="text-white/20">·</span>
               <span className="inline-flex items-center gap-1">
-                <kbd className="rounded bg-white/[0.06] border border-white/[0.06] px-1 py-0.5 font-mono text-[10px] leading-none text-muted">T</kbd>
+                <kbd className="rounded bg-white/[0.08] border border-white/[0.08] px-1.5 py-1 font-mono text-[10px] leading-none text-ink">T</kbd>
                 <span>switch</span>
               </span>
             </>
           )}
           <span className="text-white/20">·</span>
           <span className="inline-flex items-center gap-1">
-            <kbd className="rounded bg-white/[0.06] border border-white/[0.06] px-1 py-0.5 font-mono text-[10px] leading-none text-muted">R</kbd>
+            <kbd className="rounded bg-white/[0.08] border border-white/[0.08] px-1.5 py-1 font-mono text-[10px] leading-none text-ink">R</kbd>
             <span>reset</span>
           </span>
         </div>
       </div>
+
+      <ConfirmModal
+        open={resetConfirmOpen}
+        title="Reset timer?"
+        message={
+          isDirty
+            ? `Reset this session? ${formatTime(timeLeft)} left in ${phaseLabelCap} · Session ${currentSession} of ${sessions} will be lost.`
+            : "Reset the timer?"
+        }
+        confirmLabel="Reset"
+        cancelLabel="Keep"
+        danger
+        onConfirm={confirmReset}
+        onCancel={() => setResetConfirmOpen(false)}
+      />
+
+      {resetToast && (
+        <Toast message={resetToast} onDismiss={() => setResetToast(null)} actionLabel="Undo" onAction={undoReset} duration={5000} />
+      )}
 
       <Onboarding open={onboardingOpen} onDismiss={dismissOnboarding} />
 
@@ -639,7 +696,7 @@ export default function PomodoroContainer() {
             endsAtLabel={pipEndsAtLabel}
             onStartPause={isRunning ? pauseTimer : startTimer}
             onTogglePhase={togglePhase}
-            onReset={resetTimer}
+            onReset={requestReset}
             pipWindow={pipWindow}
           />,
           pipWindow.document.body

@@ -7,6 +7,7 @@ interface PhaseCardProps {
   colorKey: "focus" | "break";
   timeLabel: string;
   variant: "active" | "banked";
+  /** @deprecated use "remaining" — keeps backward compat */
   isRunning?: boolean; // solo para variant="active"
   statText?: string; // ej. "62 of 100 used", solo para variant="active"
   progress?: number; // 0..1, solo para variant="active"
@@ -42,11 +43,11 @@ export default function PhaseCard({
             {label} · {isRunning ? "running" : "paused"}
           </span>
           {statText && (
-            <span className="text-[11px] text-muted">{statText}</span>
+            <span className="text-[11px] text-muted tabular-nums">{statText}</span>
           )}
         </div>
         <div
-          className="font-mono text-4xl text-ink tracking-tight leading-tight tabular-nums"
+          className="font-mono text-[38px] text-ink tracking-tight leading-none tabular-nums"
           aria-live="off"
           aria-atomic="true"
         >
@@ -69,10 +70,10 @@ export default function PhaseCard({
   }
 
   return (
-    <div className="rounded-xl border border-line p-3.5">
+    <div className="rounded-[10px] border border-line p-3.5">
       <div className="flex items-center justify-between">
         <span className="text-[11px] tracking-wider text-faint lowercase">
-          {label} · banked
+          {label} · remaining
         </span>
         <span className="font-mono text-[22px] text-muted tabular-nums">
           {timeLabel}

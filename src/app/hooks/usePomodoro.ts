@@ -282,6 +282,25 @@ export function usePomodoro({
     setEndTime(null);
   }, [focusTime, breakTime, sessions, activeMode]);
 
+  const restoreSnapshot = useCallback(
+    (snap: { timeLeftFocus: number; timeLeftBreak: number; currentSession: number; currentPhase: PomodoroPhase; isRunning: boolean }) => {
+      setTimeLeftFocus(snap.timeLeftFocus);
+      setTimeLeftBreak(snap.timeLeftBreak);
+      setCurrentSession(snap.currentSession);
+      setCurrentPhase(snap.currentPhase);
+      setIsRunning(snap.isRunning);
+      isDirtyRef.current = true;
+      if (snap.isRunning) {
+        endTimeRef.current = Date.now() + (snap.currentPhase === "focus" ? snap.timeLeftFocus : snap.timeLeftBreak) * 1000;
+        setEndTime(endTimeRef.current);
+      } else {
+        endTimeRef.current = null;
+        setEndTime(null);
+      }
+    },
+    [],
+  );
+
   const togglePhase = useCallback(() => {
     // Solo permitimos alternar manualmente en modo Flexible
     if (activeMode !== "flex") return;
@@ -377,6 +396,7 @@ export function usePomodoro({
     startTimer,
     pauseTimer,
     resetTimer,
+    restoreSnapshot,
     togglePhase,
     changeMode,
   };

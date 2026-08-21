@@ -12,13 +12,13 @@ export default function UpdateBanner({ onReload, onDismiss }: UpdateBannerProps)
   return (
     <div
       role="status"
-      className="fixed top-4 left-1/2 -translate-x-1/2 z-[70] flex items-center gap-3 bg-ink text-[#101318] text-[13px] font-medium pl-4 pr-2 py-2 rounded-full shadow-xl border border-white/10"
+      className="fixed top-4 left-1/2 -translate-x-1/2 z-[71] flex items-center gap-2 sm:gap-3 bg-ink text-[#101318] text-[13px] font-medium pl-4 pr-2 py-2 rounded-full shadow-xl border border-white/10 max-w-[90vw] whitespace-nowrap"
     >
-      <span>A new version is available</span>
+      <span className="truncate text-xs sm:text-[13px]">A new version is available</span>
       <button
         type="button"
         onClick={onReload}
-        className="flex items-center gap-1 bg-[#101318] text-ink px-3 py-1.5 rounded-full hover:opacity-90 transition-opacity"
+        className="flex items-center gap-1 bg-[#101318] text-ink px-3 py-1.5 rounded-full hover:opacity-90 transition-opacity shrink-0 text-xs sm:text-[13px]"
       >
         <RefreshIcon className="w-3.5 h-3.5" />
         Reload
@@ -27,7 +27,7 @@ export default function UpdateBanner({ onReload, onDismiss }: UpdateBannerProps)
         type="button"
         onClick={onDismiss}
         aria-label="Dismiss update notice"
-        className="text-[#101318]/60 hover:text-[#101318] p-1"
+        className="text-[#101318]/60 hover:text-[#101318] p-1 shrink-0"
       >
         <CloseIcon className="w-3.5 h-3.5" />
       </button>

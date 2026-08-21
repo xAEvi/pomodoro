@@ -17,7 +17,7 @@ export default function ProgressRing({
   strokeWidth = 6,
   children,
 }: ProgressRingProps) {
-  const radius = size / 2 - strokeWidth * 2;
+  const radius = size / 2 - strokeWidth - 2;
   const circumference = 2 * Math.PI * radius;
   const clampedProgress = Math.min(1, Math.max(0, progress));
   const dashOffset = circumference * (1 - clampedProgress);
