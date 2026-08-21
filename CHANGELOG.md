@@ -2,6 +2,10 @@
 
 ## 2026-08-21
 
+### Added
+
+- **PiP compact muestra "ends HH:MM" en el centro**: `PipTimerCompact` (`src/app/components/pomodoro/PipTimer.tsx:132`) ahora renderiza `endsAtLabel` (`pipEndsAtLabel` de `PomodoroContainer.tsx:353` — `endsAtLabel` en classic y `flexEndsAtLabel` combinado en flex) en el medio de la barra compacta, entre el contador y el botón de pausa. Antes solo se veía en el modo PiP grande (`PipTimerFull`), el layout chiquito (`isCompact` de `usePipSize.ts:6`) solo mostraba `timeLabel` y el botón. Se usa `flex-1` centrado con `text-faint`, `tabular-nums` y `drop-shadow` para legibilidad sobre el wash de progreso, y un `span` vacío como spacer cuando no hay `endsAtLabel` (timer pausado) para mantener `space-between`.
+
 ### Fixed
 
 - **Classic sin break final**: el ciclo clásico ya no añade un break después del último focus. `2×25/10` pasa de `1h10m` (`sessions*(focus+break)`) a `1h00m` (`sessions*focus+(sessions-1)*break`: `25+10+25`). Se corrigió `handlePhaseCompletion` (`src/app/hooks/usePomodoro.ts:164`) para detenerse en `focus` `00:00` cuando `currentSession >= sessions` en modo classic, y `getClassicRemainingSeconds`/`getClassicTotalMinutes` (`src/app/utils/time.ts:52`) para el `min left` (`PomodoroContainer.tsx:300`). Flex mantiene `sessions*(focus+break)`.

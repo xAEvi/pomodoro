@@ -135,6 +135,7 @@ function PipTimerCompact({
   isRunning,
   activeMode,
   progress,
+  endsAtLabel,
   onStartPause,
   onTogglePhase,
 }: PipTimerProps) {
@@ -165,10 +166,17 @@ function PipTimerCompact({
         <div className="absolute inset-0 w-full h-full">{fill}</div>
       )}
 
-      <div className="absolute inset-0 flex items-center justify-between px-2 gap-2 pointer-events-none">
-        <span className="text-[clamp(14px,7vh,22px)] font-mono text-ink tabular-nums tracking-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]">
+      <div className="absolute inset-0 flex items-center justify-between px-2 gap-1.5 pointer-events-none">
+        <span className="text-[clamp(14px,7vh,22px)] font-mono text-ink tabular-nums tracking-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)] shrink-0">
           {timeLabel}
         </span>
+        {endsAtLabel ? (
+          <span className="flex-1 min-w-0 text-center text-[clamp(11px,2.8vh,12px)] font-medium tabular-nums tracking-tight leading-none text-faint drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)] whitespace-nowrap truncate px-1">
+            ends {endsAtLabel}
+          </span>
+        ) : (
+          <span className="flex-1 min-w-0" aria-hidden="true" />
+        )}
         <button
           onClick={(event) => {
             event.stopPropagation();
