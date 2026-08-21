@@ -342,9 +342,6 @@ export default function PomodoroContainer() {
         })();
   const minutesLeftInCycle = Math.ceil(totalRemainingSeconds / 60);
 
-  // Bloque total de tiempo configurado para el ciclo completo.
-  const blockTotalMinutes = flexTotalMinutes;
-
   // Posición sintética dentro de la barra de sesiones en modo flex: como no
   // hay avance de sesión automático, se deriva del progreso de la fase activa.
   const flexSyntheticSession = Math.min(
@@ -552,15 +549,8 @@ export default function PomodoroContainer() {
               variant="banked"
             />
 
-            {/* Generous group: budget + bar + ends */}
+            {/* Bar + ends — Block budget ya vive en el pill superior (F 2 h 00 m), evita redundancia */}
             <div className="mt-1 flex flex-col gap-1.5">
-              <div className="flex justify-between text-[11px] text-faint">
-                <span>Block budget</span>
-                <span>
-                  {sessions} × {focusTime}/{breakTime} ·{" "}
-                  {formatDurationHM(blockTotalMinutes)}
-                </span>
-              </div>
               <SessionBar
                 sessions={sessions}
                 currentSession={flexSyntheticSession}
