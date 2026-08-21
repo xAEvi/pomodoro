@@ -495,6 +495,7 @@ export default function PomodoroContainer() {
             onChange={changeMode}
             disabled={isRunning}
             isDirty={isDirty}
+            dirtyDetail={`${formatTime(timeLeft)} left in ${phaseLabelCap} · Session ${currentSession} of ${sessions}`}
           />
         </div>
 
