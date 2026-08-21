@@ -12,7 +12,7 @@ export default function UpdateBanner({ onReload, onDismiss }: UpdateBannerProps)
   return (
     <div
       role="status"
-      className="fixed bottom-5 left-1/2 -translate-x-1/2 z-[70] flex items-center gap-3 bg-ink text-[#101318] text-[13px] font-medium pl-4 pr-2 py-2 rounded-full shadow-xl"
+      className="fixed top-4 left-1/2 -translate-x-1/2 z-[70] flex items-center gap-3 bg-ink text-[#101318] text-[13px] font-medium pl-4 pr-2 py-2 rounded-full shadow-xl border border-white/10"
     >
       <span>A new version is available</span>
       <button

@@ -131,7 +131,7 @@ export default function ProfileSelector({
 
       {open && (
         <div
-          className="absolute left-0 right-0 mt-1.5 z-20 bg-surface border border-line rounded-[10px] shadow-xl overflow-hidden"
+          className="absolute left-0 right-0 mt-1.5 z-20 bg-surface border border-line rounded-[10px] shadow-xl overflow-hidden max-h-[40vh] overflow-y-auto overscroll-contain"
           role="listbox"
         >
           {profiles.map((profile) => {
