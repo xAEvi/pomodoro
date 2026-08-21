@@ -530,7 +530,7 @@ export default function PomodoroContainer() {
         {activeMode === "classic" ? (
           <>
             <div className="flex justify-center mb-4">
-              <ProgressRing progress={progress} colorClass={currentPhase === "focus" ? "text-focus" : "text-break"}>
+              <ProgressRing progress={progress} colorClass={currentPhase === "focus" ? "text-focus" : "text-break"} isRunning={isRunning}>
                 <span
                   className={`text-[11px] lowercase tracking-wider ${
                     currentPhase === "focus" ? "text-focus" : "text-break"
@@ -538,7 +538,7 @@ export default function PomodoroContainer() {
                 >
                   {currentPhase}
                 </span>
-                <span className="font-mono text-[38px] text-ink tracking-tight tabular-nums">
+                <span className="font-mono text-[38px] text-ink tracking-tight tabular-nums motion-safe:transition-transform motion-safe:duration-200">
                   {formatTime(timeLeft)}
                 </span>
                 <span className="text-[11px] text-faint h-4">

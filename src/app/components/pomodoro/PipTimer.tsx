@@ -41,6 +41,8 @@ function PipTimerFull({
   const progressPercent = Math.round(clampedProgress * 100);
   const size = 98;
   const strokeWidth = 5;
+  const pad = 10;
+  const c = size / 2;
   const radius = size / 2 - strokeWidth;
   const circumference = 2 * Math.PI * radius;
   const dashOffset = circumference * (1 - clampedProgress);
@@ -61,31 +63,34 @@ function PipTimerFull({
         aria-label={`${progressPercent}% elapsed`}
       >
         <svg
-          viewBox={`0 0 ${size} ${size}`}
+          viewBox={`${-pad} ${-pad} ${size + pad * 2} ${size + pad * 2}`}
           width={size}
           height={size}
-          className="-rotate-90 block"
+          className="block overflow-visible"
+          style={{ overflow: "visible" }}
           aria-hidden="true"
         >
           <circle
-            cx={size / 2}
-            cy={size / 2}
+            cx={c}
+            cy={c}
             r={radius}
             fill="none"
             stroke="rgba(255,255,255,0.10)"
             strokeWidth={strokeWidth}
           />
           <circle
-            cx={size / 2}
-            cy={size / 2}
+            cx={c}
+            cy={c}
             r={radius}
             fill="none"
             strokeWidth={strokeWidth}
             strokeLinecap="round"
             strokeDasharray={circumference}
             strokeDashoffset={dashOffset}
+            transform={`rotate(-90 ${c} ${c})`}
             className={`transition-[stroke-dashoffset] duration-500 ease-linear ${colorText}`}
             stroke="currentColor"
+            style={{ overflow: "visible" }}
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-0 px-1">
